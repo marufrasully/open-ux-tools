@@ -27,6 +27,7 @@ Add `"test:integration": "playwright test"` to `package.json`.
 
 [Check all possible options](https://playwright.dev/docs/test-cli)
 
+## View report from CI GitHub actions
 
 ## Known limitation
 `startServer` with [Parallelism](https://playwright.dev/docs/test-parallel) options may not give desired result. If you are using `startServer`, disable parallelism by adding `workers: 1` in `playwright.config.ts` file.
