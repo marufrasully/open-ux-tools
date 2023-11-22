@@ -4,7 +4,8 @@ import {
     teardownServer,
     copyProject,
     getDestinationProjectRoot,
-    getPort
+    getPort,
+    expect
 } from '@sap-ux-private/playwright';
 import type { Page } from '@sap-ux-private/playwright';
 import { writeFile } from 'fs/promises';
@@ -113,10 +114,10 @@ const check = async (param: { page: Page, version?: string }) => {
     const { page, version } = param;
     await page.goto(`${getUrl()}/my/custom/path/preview.html#app-preview`);
     await page.getByRole('button', { name: 'Go', exact: true }).click();
-    if (version === '1.111.9' || version === '1.115.0') {
-        page.getByText('ProductForEdit_NoteExits', { exact: true });
+    if (version && ['1.111.9', '1.115.0'].includes(version)) {
+        await expect(page.getByText('ProductForEdit_NoteExits', { exact: true })).toBeVisible();
     } else {
-        page.getByText('ProductForEdit_0', { exact: true });
+        await expect(page.getByText('ProductForEdit_0', { exact: true })).toBeVisible();
     }
 };
 
