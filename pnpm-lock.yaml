@@ -1147,6 +1147,9 @@ importers:
       '@sap-ux-private/control-property-editor-common':
         specifier: workspace:*
         version: link:../control-property-editor-common
+      '@sap-ux-private/playwright':
+        specifier: 0.0.1
+        version: link:../playwright
       '@sap-ux/eslint-plugin-fiori-tools':
         specifier: workspace:*
         version: link:../eslint-plugin-fiori-tools
