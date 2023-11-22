@@ -1,10 +1,8 @@
 name: CI/CD Pipeline
 
 on:
-    push:
-        branches: [main]
-    pull_request:
-        branches: [main]
+  # Trigger the workflow only manually
+  workflow_dispatch:
 
 jobs:
     build:
