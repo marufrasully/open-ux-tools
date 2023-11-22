@@ -41,16 +41,9 @@ jobs:
               run: npx playwright install --with-deps
             - name: Run preview integration tests
               run: pnpm run test:integration
-            - name: Find playwright report directory
-              if: always()
-              id: find-report-directory
-              run: |
-                # Search for the playwright-report directory within the monorepo
-                report_directory=$(find . -type d -name "playwright-report" | head -n 1)
-                echo "::set-output name=report_directory::$report_directory"
             - uses: actions/upload-artifact@v3
               if: always()
               with:
-                name: playwright-report
-                path: ${{ steps.find-report-directory.outputs.report_directory }}
+                name: playwright-report-os-${{ matrix.os }}-node-version--${{ matrix.node-version }}
+                path: '**/playwright-report'
                 retention-days: 30
