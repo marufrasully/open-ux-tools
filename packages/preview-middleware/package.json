@@ -25,7 +25,7 @@
         "lint:fix": "eslint . --ext .ts --fix",
         "test": "jest --ci --forceExit --detectOpenHandles --colors",
         "test-u": "jest --ci --forceExit --detectOpenHandles --colors -u",
-        "test:integration": "playwright test",
+        "test:integration": "npx playwright test",
         "link": "pnpm link --global",
         "unlink": "pnpm unlink --global"
     },

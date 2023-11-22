@@ -109,11 +109,15 @@ const prepare = async (ui5Version: string) => {
     });
 };
 
-const check = async (param: { page: Page }) => {
-    const { page } = param;
+const check = async (param: { page: Page, version?: string }) => {
+    const { page, version } = param;
     await page.goto(`${getUrl()}/my/custom/path/preview.html#app-preview`);
     await page.getByRole('button', { name: 'Go', exact: true }).click();
-    page.getByText('ProductForEdit_0', { exact: true });
+    if (version === '1.111.9' || version === '1.115.0') {
+        page.getByText('ProductForEdit_NoteExits', { exact: true });
+    } else {
+        page.getByText('ProductForEdit_0', { exact: true });
+    }
 };
 
 test.afterEach(async () => {
@@ -141,7 +145,7 @@ test.describe('UI5 version: 1.108.19', () => {
 test.describe('UI5 version: 1.111.8', () => {
     test('Click on Go button and check an element', async ({ page }) => {
         await prepare('1.111.8');
-        await check({ page });
+        await check({ page, version: '1.111.9' });
     });
 });
 test.describe('UI5 version: 1.114.0', () => {
@@ -153,6 +157,6 @@ test.describe('UI5 version: 1.114.0', () => {
 test.describe('UI5 version: 1.115.0', () => {
     test('Click on Go button and check an element', async ({ page }) => {
         await prepare('1.115.0');
-        await check({ page });
+        await check({ page, version: '1.115.0' });
     });
 });

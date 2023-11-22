@@ -41,7 +41,7 @@ jobs:
               run: npx playwright install --with-deps
             - name: Run preview integration tests
               run: pnpm run test:integration
-            - name: Find Playwright report directory
+            - name: Find playwright report directory
               id: find-report-directory
               run: |
                 # Search for the playwright-report directory within the monorepo
