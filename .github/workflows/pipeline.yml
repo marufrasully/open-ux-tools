@@ -42,6 +42,7 @@ jobs:
             - name: Run preview integration tests
               run: pnpm run test:integration
             - name: Find playwright report directory
+              if: always()
               id: find-report-directory
               run: |
                 # Search for the playwright-report directory within the monorepo
