@@ -39,10 +39,6 @@ jobs:
               run: pnpm install
             - name: Run build
               run: pnpm run build
-            - name: Install playwright browsers
-              run: npx playwright install --with-deps
-            - name: Run integration tests
-              run: pnpm run test:integration
             - name: Check for changes in preview-middleware package
               id: check_changes
               run: |
@@ -52,7 +48,12 @@ jobs:
                 else
                   echo "::set-output name=changes::false"
                 fi
-
+            - name: Install playwright browsers
+              if: always() && steps.check_changes.outputs.changes == 'true'
+              run: npx playwright install --with-deps
+            - name: Run integration tests
+              if: always() && steps.check_changes.outputs.changes == 'true'
+              run: pnpm run test:integration
             - name: Upload playwright reports
               uses: actions/upload-artifact@v3
               if: always() && steps.check_changes.outputs.changes == 'true'
