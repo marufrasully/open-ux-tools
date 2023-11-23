@@ -1,9 +1,9 @@
 name: CI/CD Pipeline
 on:
     push:
-        branches: [main]
+        branches: [feat/playwright-cpe-int-test]
     pull_request:
-        branches: [main]
+        branches: [feat/playwright-cpe-int-test]
 
 jobs:
     build:
