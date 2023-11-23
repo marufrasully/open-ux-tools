@@ -40,6 +40,7 @@ jobs:
             - name: Run build
               run: pnpm run build
             - name: Check for changes in preview-middleware package
+              if: always()
               id: check_changes
               run: |
                 changed_files=$(git diff --name-only HEAD^ HEAD)
