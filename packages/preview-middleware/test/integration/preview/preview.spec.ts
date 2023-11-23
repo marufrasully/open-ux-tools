@@ -106,7 +106,7 @@ const prepare = async (ui5Version: string) => {
         host: 'localhost',
         protocol: 'http',
         usedPortAction: 'error',
-        debug: false
+        debug: true
     });
 };
 
