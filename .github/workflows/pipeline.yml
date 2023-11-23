@@ -1,13 +1,15 @@
 name: CI/CD Pipeline
 on:
-  # Trigger the workflow only manually
-  workflow_dispatch:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
 
 jobs:
     build:
         strategy:
             matrix:
-                os: [ubuntu-latest, windows-latest]
+                os: [windows-latest]
                 node-version: [18.x]
         runs-on: ${{ matrix.os }}
         timeout-minutes: 15
@@ -41,9 +43,19 @@ jobs:
               run: npx playwright install --with-deps
             - name: Run integration tests
               run: pnpm run test:integration
+            - name: Check for changes in preview-middleware package
+              id: check_changes
+              run: |
+                changed_files=$(git diff --name-only HEAD^ HEAD)
+                if [[ $changed_files == *"packages/preview-middleware"* ]]; then
+                  echo "::set-output name=changes::true"
+                else
+                  echo "::set-output name=changes::false"
+                fi
+
             - name: Upload playwright reports
               uses: actions/upload-artifact@v3
-              if: always()
+              if: always() && steps.check_changes.outputs.changes == 'true'
               with:
                 name: playwright-reports-os-${{ matrix.os }}-node-version-${{ matrix.node-version }}
                 path: |
