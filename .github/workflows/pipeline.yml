@@ -39,12 +39,14 @@ jobs:
               run: pnpm run build
             - name: Install playwright browsers
               run: npx playwright install --with-deps
-            - name: Run preview integration tests
+            - name: Run integration tests
               run: pnpm run test:integration
-            - name: Upload playwright report
+            - name: Upload playwright reports
               uses: actions/upload-artifact@v3
               if: always()
               with:
-                name: playwright-report-os-${{ matrix.os }}-node-version-${{ matrix.node-version }}
-                path: '**/playwright-report'
+                name: playwright-reports-os-${{ matrix.os }}-node-version-${{ matrix.node-version }}
+                path: |
+                  **/playwright-report
+                  !**/node_modules
                 retention-days: 15
