@@ -39,20 +39,17 @@ jobs:
               run: pnpm install
             - name: Run build
               run: pnpm run build
-            - name: Check for changes in preview-middleware package
-              if: always()
-              id: check_changes
-              run: |
-                changed_files=$(git diff --name-only HEAD^ HEAD)
-                if [[ $changed_files == *"packages/preview-middleware"* ]]; then
-                  echo "::set-output name=changes::true"
-                else
-                  echo "::set-output name=changes::false"
-                fi
+            - name: Check for changes
+              uses: dorny/paths-filter@v2
+              with:
+                filters: |
+                  check_changes:
+                    - 'packages/preview-middleware/**'
             - name: Install playwright browsers
               if: always() && steps.check_changes.outputs.changes == 'true'
               run: npx playwright install --with-deps
             - name: Run integration tests
+              # Run only if preview-middleware was changed
               if: always() && steps.check_changes.outputs.changes == 'true'
               run: pnpm run test:integration
             - name: Upload playwright reports
