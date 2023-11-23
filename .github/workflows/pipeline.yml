@@ -9,7 +9,7 @@ jobs:
     build:
         strategy:
             matrix:
-                os: [windows-latest]
+                os: [ubuntu-latest]
                 node-version: [18.x]
         runs-on: ${{ matrix.os }}
         timeout-minutes: 15
@@ -44,7 +44,7 @@ jobs:
               id: check_changes
               run: |
                 changed_files=$(git diff --name-only HEAD^ HEAD)
-                if ($changed_files == *"packages/preview-middleware"*); then
+                if [[ $changed_files == *"packages/preview-middleware"* ]]; then
                   echo "::set-output name=changes::true"
                 else
                   echo "::set-output name=changes::false"
