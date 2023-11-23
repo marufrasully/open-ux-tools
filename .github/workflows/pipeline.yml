@@ -41,9 +41,28 @@ jobs:
               run: npx playwright install --with-deps
             - name: Run preview integration tests
               run: pnpm run test:integration
-            - uses: actions/upload-artifact@v3
+            - name: Find Playwright Reports
+              if: always()
+              id: find_reports
+              run: |
+                # Get a list of directories containing the "playwright-report" folder
+                directories=$(find . -type d -name "playwright-report" -printf '%h\n')
+                # Loop through each directory
+                for dir in $directories; do
+                  # Extract the package name from the directory path
+                  package_name=$(basename "$dir")
+
+                  # Upload the "playwright-report" directory as an artifact with the package name
+                  echo "Uploading $dir as an artifact with package name $package_name"
+                  echo "::set-env name=PACKAGE_NAME::$package_name"
+                  echo "::set-env name=PLAYWRIGHT_REPORTS_PATH::$dir"
+                  echo "::set-output name=package_name::$package_name"
+                  echo "::set-output name=playwright_reports_path::$dir"
+                done
+            - name: Upload playwright report
+              uses: actions/upload-artifact@v3
               if: always()
               with:
-                name: playwright-report-os-${{ matrix.os }}-node-version--${{ matrix.node-version }}
-                path: '**/playwright-report'
-                retention-days: 30
+                name: ${{ steps.find_reports.outputs.package_name }}-os--${{ matrix.os }}-node-version--${{ matrix.node-version }}-report
+                path: ${{ steps.find_reports.outputs.playwright_reports_path }}
+                retention-days: 15
