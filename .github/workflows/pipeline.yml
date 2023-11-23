@@ -45,7 +45,7 @@ jobs:
               with:
                 filters: |
                   src:
-                    - 'packages/preview-middleware/**'
+                    - 'packages/preview-middleware/** | packages/preview-middleware-client/**'
             - name: Install playwright browsers
               if: always() && steps.check_changes.outputs.src == 'true'
               run: npx playwright install --with-deps
