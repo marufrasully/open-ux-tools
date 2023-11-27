@@ -121,39 +121,51 @@ test.afterEach(async () => {
     await teardownServer();
 });
 
-test.describe('UI5 version: 1.84.35', () => {
+test.describe('UI5 version: 1.120.1', () => {
     test('Click on Go button and check an element ', async ({ page }) => {
-        await prepare('1.84.35');
+        await prepare('1.120.1');
         await check({ page });
     });
 });
-test.describe('UI5 version: 1.96.22', () => {
+test.describe('UI5 version: 1.117.5', () => {
     test('Click on Go button and check an element', async ({ page }) => {
-        await prepare('1.96.22');
+        await prepare('1.117.5');
         await check({ page });
     });
 });
-test.describe('UI5 version: 1.108.19', () => {
+test.describe('UI5 version: 1.114.10', () => {
     test('Click on Go button and check an element', async ({ page }) => {
-        await prepare('1.108.19');
+        await prepare('1.114.10');
         await check({ page });
     });
 });
-test.describe('UI5 version: 1.111.8', () => {
+test.describe('UI5 version: 1.108.25', () => {
     test('Click on Go button and check an element', async ({ page }) => {
-        await prepare('1.111.8');
+        await prepare('1.108.25');
         await check({ page });
     });
 });
-test.describe('UI5 version: 1.114.0', () => {
+test.describe('UI5 version: 1.96.26', () => {
     test('Click on Go button and check an element', async ({ page }) => {
-        await prepare('1.114.0');
+        await prepare('1.96.26');
         await check({ page });
     });
 });
-test.describe('UI5 version: 1.115.0', () => {
+test.describe('UI5 version: 1.84.39', () => {
     test('Click on Go button and check an element', async ({ page }) => {
         await prepare('1.115.0');
+        await check({ page });
+    });
+});
+test.describe('UI5 version: 1.71.60', () => {
+    test.skip('Click on Go button and check an element', async ({ page }) => {
+        await prepare('1.71.60');
+        await check({ page });
+    });
+});
+test.describe('UI5 version: 1.38.62', () => {
+    test.skip('Click on Go button and check an element', async ({ page }) => {
+        await prepare('1.38.62');
         await check({ page });
     });
 });
