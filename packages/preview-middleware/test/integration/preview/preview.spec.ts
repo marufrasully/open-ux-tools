@@ -158,13 +158,13 @@ test.describe('UI5 version: 1.84.39', () => {
     });
 });
 test.describe('UI5 version: 1.71.60', () => {
-    test.skip('Click on Go button and check an element', async ({ page }) => {
+    test('Click on Go button and check an element', async ({ page }) => {
         await prepare('1.71.60');
         await check({ page });
     });
 });
 test.describe('UI5 version: 1.38.62', () => {
-    test.skip('Click on Go button and check an element', async ({ page }) => {
+    test('Click on Go button and check an element', async ({ page }) => {
         await prepare('1.38.62');
         await check({ page });
     });
