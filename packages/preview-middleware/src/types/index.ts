@@ -10,7 +10,8 @@ export interface Intent {
 }
 
 /**
- * Configuration for additional applications
+ * Configuration for additional applications.
+ * changed in project root.
  */
 export interface App {
     target: string;
