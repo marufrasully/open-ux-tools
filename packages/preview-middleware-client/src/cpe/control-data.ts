@@ -26,7 +26,7 @@ type AnalyzedType = Pick<UI5ControlProperty, 'isArray' | 'primitiveType' | 'ui5T
 /**
  * A property is disabled if it is an array or the type is 'any'
  * - since  we currently don't have a good editor for it Otherwise, it is enabled.
- *
+ * dummy change.
  * @param analyzedType - analyzed property type
  * @returns boolean
  */
