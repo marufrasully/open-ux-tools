@@ -272,7 +272,7 @@ export type SystemSelectionPromptOptions = {
     /**
      * Determines if the system selection prompt should use auto complete prompt for system names.
      * Note that the auto-complete module must be registered with the inquirer instance to use this feature.
-     * dummy changes. second dummy change.
+     * unrelated changes.
      */
     useAutoComplete?: boolean;
     /**
