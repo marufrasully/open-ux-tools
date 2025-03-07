@@ -8,7 +8,7 @@ export type StringMap = { [key: string]: any };
  * @returns {string} the interpolated string
  * @example
  * text('Hi {{name}}, today is {{day}}.', {name: 'Jon', day: 'Jan 1, 1970'});
- * // Returns 'Hi Jon, today is Jan 1, 1970.'
+ * // Returns 'Hi Jon, today is Jan 1, 1970.'..........ok.
  */
 export function interpolate(template: string, replacements?: StringMap): string {
     try {
