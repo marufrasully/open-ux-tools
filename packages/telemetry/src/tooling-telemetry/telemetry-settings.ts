@@ -106,7 +106,7 @@ function watchTelemetrySettingStore(storeService: Service<TelemetrySetting, Tele
 /**
  * Telemetry API function to init settings.
  *
- * @param options Settings pass from the consumer module.
+ * @param options Settings pass from the consumer module........something added.
  */
 export const initTelemetrySettings = async (options: ToolsSuiteTelemetryInitSettings): Promise<void> => {
     try {
