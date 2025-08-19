@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
     push:
-        branches: [main]
+        branches: [feat/fioriMcpServer]
     pull_request:
-        branches: [main]
+        branches: [feat/fioriMcpServer]
 jobs:
     build:
         strategy:
