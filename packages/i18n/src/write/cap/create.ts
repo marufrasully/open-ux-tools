@@ -14,6 +14,16 @@ import { tryAddPropertiesTexts } from './properties';
 import type { Editor } from 'mem-fs-editor';
 
 /**
+ * A CAP i18n updater function — tries to add entries to an existing file and returns true on success.
+ */
+export type CapI18nUpdater = (
+    env: CdsEnvironment,
+    filePath: string,
+    newI18nEntries: NewI18nEntry[],
+    fs?: Editor
+) => Promise<boolean>;
+
+/**
  * Create new i18n entries to an existing file or in a new file if one does not exist.
  *
  * @param root project root, where i18n folder should reside if no i18n file exists
@@ -21,6 +31,7 @@ import type { Editor } from 'mem-fs-editor';
  * @param newI18nEntries new i18n entries that will be maintained
  * @param env CDS environment configuration
  * @param fs optional `mem-fs-editor` instance. If provided, `mem-fs-editor` api is used instead of `fs` of node
+ * @param updaters ordered list of write strategies to try; defaults to json, properties, csv
  * @returns boolean or exception
  * @description To create new entries, if tries:
  * ```markdown
@@ -34,7 +45,8 @@ export async function createCapI18nEntries(
     path: string,
     newI18nEntries: NewI18nEntry[],
     env: CdsEnvironment,
-    fs?: Editor
+    fs?: Editor,
+    updaters: CapI18nUpdater[] = [tryAddJsonTexts, tryAddPropertiesTexts, tryAddCsvTexts]
 ): Promise<boolean> {
     const { baseFileName, folders } = getI18nConfiguration(env);
     const resolvedFolder = resolveCapI18nFolderForFile(root, env, path);
@@ -44,8 +56,6 @@ export async function createCapI18nEntries(
         await promises.mkdir(i18nFolderPath);
     }
     const filePath = join(i18nFolderPath, baseFileName);
-
-    const updaters = [tryAddJsonTexts, tryAddPropertiesTexts, tryAddCsvTexts];
 
     for (const update of updaters) {
         if (await update(env, filePath, newI18nEntries, fs)) {
