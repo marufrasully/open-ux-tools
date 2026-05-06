@@ -8,11 +8,13 @@ export {
     extractI18nKey,
     extractDoubleCurlyBracketsKey,
     getI18nUniqueKey,
+    toKeyedLookup,
     convertToCamelCase,
     convertToPascalCase,
     printPropertiesI18nEntry,
     printPropertiesI18nAnnotation
 } from './utils';
+export type { KeyedI18nLookup } from './utils';
 
 export {
     CdsEnvironment,

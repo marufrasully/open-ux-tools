@@ -5,5 +5,6 @@ export { printPropertiesI18nAnnotation, printPropertiesI18nEntry } from './print
 export { getI18nMaxLength, getI18nTextType, getAnnotationPrefix } from './annotation';
 export { applyIndent, discoverIndent, discoverLineEnding } from './whitespace';
 export { convertToCamelCase, convertToPascalCase } from './string-case';
-export { extractI18nKey, getI18nUniqueKey, extractDoubleCurlyBracketsKey } from './key';
+export { extractI18nKey, getI18nUniqueKey, extractDoubleCurlyBracketsKey, toKeyedLookup } from './key';
+export type { KeyedI18nLookup } from './key';
 export { readFile, writeFile } from './mem-fs-editor';
