@@ -6,11 +6,9 @@ import {
     jsonPath,
     discoverIndent,
     applyIndent,
-    discoverLineEnding,
-    doesExist,
-    readFile,
-    writeFile
+    discoverLineEnding
 } from '../../utils';
+import { tryUpdateFile } from '../utils';
 import { Range } from '@sap-ux/text-document-utils';
 import type { Node } from 'jsonc-parser';
 import { parseTree } from 'jsonc-parser';
@@ -158,13 +156,6 @@ export async function tryAddJsonTexts(
     newI18nEntries: NewI18nEntry[],
     fs?: Editor
 ): Promise<boolean> {
-    const i18nFilePath = jsonPath(path);
-    if (!(await doesExist(i18nFilePath))) {
-        return false;
-    }
     const { fallbackLanguage } = getI18nConfiguration(env);
-    const content = await readFile(i18nFilePath, fs);
-    const newContent = addJsonTexts(content, fallbackLanguage, newI18nEntries);
-    await writeFile(i18nFilePath, newContent, fs);
-    return true;
+    return tryUpdateFile(jsonPath(path), (content) => addJsonTexts(content, fallbackLanguage, newI18nEntries), fs);
 }

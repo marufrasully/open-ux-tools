@@ -1,10 +1,7 @@
 import { tryAddPropertiesTexts } from '../../../../src/write/cap/properties';
-import * as csv from '../../../../src/write/cap/csv';
 import * as utils from '../../../../src/utils';
 import fs from 'node:fs';
 import { join } from 'node:path';
-import { create as createStorage } from 'mem-fs';
-import { create } from 'mem-fs-editor';
 
 describe('properties', () => {
     describe('tryAddPropertiesTexts', () => {
@@ -26,62 +23,19 @@ describe('properties', () => {
             jest.resetAllMocks();
             jest.restoreAllMocks();
         });
-        test('i18n.properties file does not exits - completed with tryAddCsvTexts', async () => {
+        test('i18n.properties file does not exist — returns false', async () => {
             // arrange
             const doesExistSpy = jest.spyOn(utils, 'doesExist').mockResolvedValue(false);
-            const tryAddCsvTextsSpy = jest.spyOn(csv, 'tryAddCsvTexts').mockResolvedValue(true);
-            const writeFileSpy = jest.spyOn(utils, 'writeFile').mockResolvedValue();
-            const readFileSpy = jest.spyOn(utils, 'readFile').mockResolvedValue('');
             // act
             const result = await tryAddPropertiesTexts(env, path, entries);
             // assert
-            expect(result).toEqual(true);
+            expect(result).toEqual(false);
             expect(doesExistSpy).toHaveBeenNthCalledWith(1, i18nPath);
-            expect(tryAddCsvTextsSpy).toHaveBeenNthCalledWith(1, env, path, entries, undefined);
-            expect(writeFileSpy).toHaveBeenCalledTimes(0);
-            expect(readFileSpy).toHaveBeenCalledTimes(0);
-        });
-        test('i18n.properties file does not exits and tryAddCsvTexts did not succeed - create new .properties file with content', async () => {
-            // arrange
-            const doesExistSpy = jest.spyOn(utils, 'doesExist').mockResolvedValue(false);
-            const tryAddCsvTextsSpy = jest.spyOn(csv, 'tryAddCsvTexts').mockResolvedValue(false);
-            const writeFileSpy = jest.spyOn(utils, 'writeFile').mockResolvedValue();
-            const readFileSpy = jest.spyOn(utils, 'readFile').mockResolvedValue('');
-            // act
-            const result = await tryAddPropertiesTexts(env, path, entries);
-            // assert
-            expect(result).toEqual(true);
-            expect(doesExistSpy).toHaveBeenNthCalledWith(1, i18nPath);
-            expect(tryAddCsvTextsSpy).toHaveBeenNthCalledWith(1, env, path, entries, undefined);
-            expect(writeFileSpy).toHaveBeenNthCalledWith(1, i18nPath, '\n#XFLD,27\nNewKey=New Value\n', undefined);
-            expect(readFileSpy).toHaveBeenCalledTimes(0);
-        });
-        test('i18n.properties file does not exits and tryAddCsvTexts did not succeed - create new .properties file with content - mem-fs-editor', async () => {
-            // arrange
-            const doesExistSpy = jest.spyOn(utils, 'doesExist').mockResolvedValue(false);
-            const tryAddCsvTextsSpy = jest.spyOn(csv, 'tryAddCsvTexts').mockResolvedValue(false);
-            const writeFileSpy = jest.spyOn(utils, 'writeFile').mockResolvedValue('');
-            const memFs = create(createStorage());
-            // act
-            const newEntries = [
-                {
-                    key: 'NewKey',
-                    value: 'New Value'
-                }
-            ];
-            const result = await tryAddPropertiesTexts(env, path, newEntries, memFs);
-            // assert
-            expect(result).toEqual(true);
-
-            expect(doesExistSpy).toHaveBeenNthCalledWith(1, i18nPath);
-            expect(tryAddCsvTextsSpy).toHaveBeenNthCalledWith(1, env, path, newEntries, memFs);
-            expect(writeFileSpy).toHaveBeenNthCalledWith(1, i18nPath, '\n#XFLD,27\nNewKey=New Value\n', memFs);
         });
         describe('add to existing .properties file', () => {
             test('file ends with new line', async () => {
                 // arrange
                 const doesExistSpy = jest.spyOn(utils, 'doesExist').mockResolvedValue(true);
-                const tryAddCsvTextsSpy = jest.spyOn(csv, 'tryAddCsvTexts').mockResolvedValue(false);
                 const writeFileSpy = jest.spyOn(fs.promises, 'writeFile').mockResolvedValue();
                 const readFileSpy = jest.spyOn(fs.promises, 'readFile').mockResolvedValue('key = value\n');
                 // act
@@ -94,7 +48,6 @@ describe('properties', () => {
                 // assert
                 expect(result).toEqual(true);
                 expect(doesExistSpy).toHaveBeenCalledTimes(1);
-                expect(tryAddCsvTextsSpy).toHaveBeenCalledTimes(0);
                 expect(readFileSpy).toHaveBeenCalledTimes(1);
                 expect(writeFileSpy).toHaveBeenNthCalledWith(
                     1,
@@ -108,7 +61,6 @@ describe('properties', () => {
             test('file does not end with new line', async () => {
                 // arrange
                 const doesExistSpy = jest.spyOn(utils, 'doesExist').mockResolvedValue(true);
-                const tryAddCsvTextsSpy = jest.spyOn(csv, 'tryAddCsvTexts').mockResolvedValue(false);
                 const writeFileSpy = jest.spyOn(fs.promises, 'writeFile').mockResolvedValue();
                 const readFileSpy = jest.spyOn(fs.promises, 'readFile').mockResolvedValue('key = value');
                 // act
@@ -121,7 +73,6 @@ describe('properties', () => {
                 // assert
                 expect(result).toEqual(true);
                 expect(doesExistSpy).toHaveBeenCalledTimes(1);
-                expect(tryAddCsvTextsSpy).toHaveBeenCalledTimes(0);
                 expect(readFileSpy).toHaveBeenCalledTimes(1);
                 expect(writeFileSpy).toHaveBeenNthCalledWith(
                     1,
@@ -135,7 +86,6 @@ describe('properties', () => {
             test('multiple entries', async () => {
                 // arrange
                 const doesExistSpy = jest.spyOn(utils, 'doesExist').mockResolvedValue(true);
-                const tryAddCsvTextsSpy = jest.spyOn(csv, 'tryAddCsvTexts').mockResolvedValue(false);
                 const writeFileSpy = jest.spyOn(fs.promises, 'writeFile').mockResolvedValue();
                 const readFileSpy = jest
                     .spyOn(fs.promises, 'readFile')
@@ -154,7 +104,6 @@ describe('properties', () => {
                 // assert
                 expect(result).toEqual(true);
                 expect(doesExistSpy).toHaveBeenCalledTimes(1);
-                expect(tryAddCsvTextsSpy).toHaveBeenCalledTimes(0);
                 expect(readFileSpy).toHaveBeenCalledTimes(1);
                 expect(writeFileSpy).toHaveBeenCalledTimes(1);
                 expect(writeFileSpy).toHaveBeenNthCalledWith(

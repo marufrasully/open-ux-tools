@@ -1,12 +1,33 @@
 import type { NewI18nEntry } from '../../types';
-import { printPropertiesI18nEntry, readFile, writeFile } from '../../utils';
+import { printPropertiesI18nEntry, readFile, writeFile, doesExist } from '../../utils';
 import type { Editor } from 'mem-fs-editor';
 import { Range, TextEdit } from '@sap-ux/text-document-utils';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { parseProperties } from '../../parser/properties/parser';
 
 /**
- * Write i18n entries to an existing i18n.properties file.
+ * Read a file, apply a pure transform, and write the result back.
+ * Returns false without touching the filesystem if the file does not exist.
+ *
+ * @param filePath absolute path to the file
+ * @param transform pure function that converts current content to new content
+ * @param fs optional `mem-fs-editor` instance
+ * @returns boolean
+ */
+export async function tryUpdateFile(
+    filePath: string,
+    transform: (content: string) => string,
+    fs?: Editor
+): Promise<boolean> {
+    if (!(await doesExist(filePath))) {
+        return false;
+    }
+    const content = await readFile(filePath, fs);
+    await writeFile(filePath, transform(content), fs);
+    return true;
+}
+
+/**
  * If keys to remove are provided, they will be removed from the file before writing new entries.
  *
  * @param i18nFilePath i18n file path

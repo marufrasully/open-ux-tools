@@ -1,6 +1,12 @@
 import { join } from 'node:path';
 import type { CdsEnvironment, NewI18nEntry } from '../../types';
-import { getI18nConfiguration, getCapI18nFolder } from '../../utils';
+import {
+    getI18nConfiguration,
+    getCapI18nFolder,
+    capPropertiesPath,
+    printPropertiesI18nEntry,
+    writeFile
+} from '../../utils';
 import { tryAddJsonTexts } from './json';
 import { tryAddCsvTexts } from './csv';
 import { tryAddPropertiesTexts } from './properties';
@@ -36,10 +42,15 @@ export async function createCapI18nEntries(
     const updaters = [tryAddJsonTexts, tryAddPropertiesTexts, tryAddCsvTexts];
 
     for (const update of updaters) {
-        const completed = await update(env, filePath, newI18nEntries, fs);
-        if (completed) {
+        if (await update(env, filePath, newI18nEntries, fs)) {
             return true;
         }
     }
-    return false;
+
+    // No existing i18n file found — create a new .properties file
+    const newContent = newI18nEntries
+        .map((entry) => printPropertiesI18nEntry(entry.key, entry.value, entry.annotation))
+        .join('');
+    await writeFile(capPropertiesPath(filePath, env), newContent, fs);
+    return true;
 }

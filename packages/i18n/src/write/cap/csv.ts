@@ -1,5 +1,6 @@
 import type { CdsEnvironment, NewI18nEntry } from '../../types';
-import { csvPath, discoverLineEnding, getI18nConfiguration, doesExist, readFile, writeFile } from '../../utils';
+import { csvPath, discoverLineEnding, getI18nConfiguration } from '../../utils';
+import { tryUpdateFile } from '../utils';
 
 import type { TextEdit } from 'vscode-languageserver-textdocument';
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -117,13 +118,6 @@ export async function tryAddCsvTexts(
     newI18nEntries: NewI18nEntry[],
     fs?: Editor
 ): Promise<boolean> {
-    const i18nFilePath = csvPath(path);
-    if (!(await doesExist(i18nFilePath))) {
-        return false;
-    }
     const { defaultLanguage } = getI18nConfiguration(env);
-    const content = await readFile(i18nFilePath, fs);
-    const newContent = addCsvTexts(content, defaultLanguage, newI18nEntries);
-    await writeFile(i18nFilePath, newContent, fs);
-    return true;
+    return tryUpdateFile(csvPath(path), (content) => addCsvTexts(content, defaultLanguage, newI18nEntries), fs);
 }

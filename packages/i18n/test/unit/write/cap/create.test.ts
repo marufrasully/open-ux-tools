@@ -86,20 +86,52 @@ describe('createCapI18nEntries', () => {
         expect(tryAddPropertiesTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, memFs);
         expect(tryAddCsvTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, memFs);
     });
-    test('none existing files', async () => {
+    test('no existing i18n file — creates new .properties file', async () => {
         // arrange
+        const pathToNewPropertiesFile = `${pathToFolderI18n}.properties`;
         const getCapI18nFolder = jest.spyOn(resolve, 'getCapI18nFolder').mockResolvedValue(pathToFolder);
         const tryAddJsonTextsSpy = jest.spyOn(json, 'tryAddJsonTexts').mockResolvedValue(false);
         const tryAddPropertiesTextsSpy = jest.spyOn(properties, 'tryAddPropertiesTexts').mockResolvedValue(false);
         const tryAddCsvTextsSpy = jest.spyOn(csv, 'tryAddCsvTexts').mockResolvedValue(false);
+        const writeFileSpy = jest.spyOn(resolve, 'writeFile').mockResolvedValue();
         // act
         const result = await createCapI18nEntries('root', 'path', newEntries, env);
         // assert
-        expect(result).toBeFalsy();
+        expect(result).toBeTruthy();
         expect(getCapI18nFolder).toHaveBeenNthCalledWith(1, 'root', 'path', env, undefined);
         expect(tryAddJsonTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, undefined);
         expect(tryAddPropertiesTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, undefined);
         expect(tryAddCsvTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, undefined);
+        expect(writeFileSpy).toHaveBeenNthCalledWith(
+            1,
+            pathToNewPropertiesFile,
+            '\n#XFLD,27\nNewKey=New Value\n',
+            undefined
+        );
+    });
+    test('no existing i18n file — creates new .properties file - mem-fs-editor', async () => {
+        // arrange
+        const pathToNewPropertiesFile = `${pathToFolderI18n}.properties`;
+        const getCapI18nFolder = jest.spyOn(resolve, 'getCapI18nFolder').mockResolvedValue(pathToFolder);
+        const tryAddJsonTextsSpy = jest.spyOn(json, 'tryAddJsonTexts').mockResolvedValue(false);
+        const tryAddPropertiesTextsSpy = jest.spyOn(properties, 'tryAddPropertiesTexts').mockResolvedValue(false);
+        const tryAddCsvTextsSpy = jest.spyOn(csv, 'tryAddCsvTexts').mockResolvedValue(false);
+        const writeFileSpy = jest.spyOn(resolve, 'writeFile').mockResolvedValue();
+        const memFs = create(createStorage());
+        // act
+        const result = await createCapI18nEntries('root', 'path', newEntries, env, memFs);
+        // assert
+        expect(result).toBeTruthy();
+        expect(getCapI18nFolder).toHaveBeenNthCalledWith(1, 'root', 'path', env, memFs);
+        expect(tryAddJsonTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, memFs);
+        expect(tryAddPropertiesTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, memFs);
+        expect(tryAddCsvTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, memFs);
+        expect(writeFileSpy).toHaveBeenNthCalledWith(
+            1,
+            pathToNewPropertiesFile,
+            '\n#XFLD,27\nNewKey=New Value\n',
+            memFs
+        );
     });
     test('exception / error case', async () => {
         // arrange
