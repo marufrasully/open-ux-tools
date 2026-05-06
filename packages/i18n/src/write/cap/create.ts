@@ -1,8 +1,9 @@
 import { join } from 'node:path';
+import { promises } from 'node:fs';
 import type { CdsEnvironment, NewI18nEntry } from '../../types';
 import {
     getI18nConfiguration,
-    getCapI18nFolder,
+    resolveCapI18nFolderForFile,
     capPropertiesPath,
     printPropertiesI18nEntry,
     writeFile
@@ -35,8 +36,13 @@ export async function createCapI18nEntries(
     env: CdsEnvironment,
     fs?: Editor
 ): Promise<boolean> {
-    const { baseFileName } = getI18nConfiguration(env);
-    const i18nFolderPath = await getCapI18nFolder(root, path, env, fs);
+    const { baseFileName, folders } = getI18nConfiguration(env);
+    const resolvedFolder = resolveCapI18nFolderForFile(root, env, path);
+    const i18nFolderPath = resolvedFolder ?? join(root, folders[0]);
+    if (!resolvedFolder && !fs) {
+        // create directory when mem-fs-editor is not provided; mem-fs-editor creates it on `.commit()`
+        await promises.mkdir(i18nFolderPath);
+    }
     const filePath = join(i18nFolderPath, baseFileName);
 
     const updaters = [tryAddJsonTexts, tryAddPropertiesTexts, tryAddCsvTexts];

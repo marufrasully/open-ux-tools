@@ -1,8 +1,7 @@
 import { join, dirname, sep } from 'node:path';
-import { existsSync, promises } from 'node:fs';
+import { existsSync } from 'node:fs';
 import type { CdsEnvironment } from '../types';
 import { getI18nConfiguration } from './config';
-import type { Editor } from 'mem-fs-editor';
 
 /**
  * Normalize file pth.
@@ -96,24 +95,16 @@ export function getCapI18nFiles(root: string, env: CdsEnvironment, filePaths: st
 }
 
 /**
- * Get an i18n folder for an existing CDS file. A new folder is only created, if it does not exist and optional `mem-fs-editor` instance is not provided.
+ * Resolve the i18n folder path for a CDS file.
+ * Returns the first existing folder found in the hierarchy, or the default
+ * `<root>/<folders[0]>` path when none exists. Never creates directories.
  *
  * @param root project root
  * @param path absolute path to cds file
- * @param env CDS environment configuration,
- * @param fs optional `mem-fs-editor` instance. If provided, a new folder is not created, even if it does not exist
- * @returns i18n folder path
+ * @param env CDS environment configuration
+ * @returns resolved i18n folder path
  */
-export async function getCapI18nFolder(root: string, path: string, env: CdsEnvironment, fs?: Editor): Promise<string> {
+export function getCapI18nFolder(root: string, path: string, env: CdsEnvironment): string {
     const { folders } = getI18nConfiguration(env);
-    let i18nFolderPath = resolveCapI18nFolderForFile(root, env, path);
-    if (!i18nFolderPath) {
-        const folder = folders[0];
-        i18nFolderPath = join(root, folder);
-        if (!fs) {
-            // create directory when mem-fs-editor is not provided. when mem-fs-editor is provided, directory is created on using `.commit()` API
-            await promises.mkdir(i18nFolderPath);
-        }
-    }
-    return i18nFolderPath;
+    return resolveCapI18nFolderForFile(root, env, path) ?? join(root, folders[0]);
 }

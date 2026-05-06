@@ -3,8 +3,6 @@ import { join } from 'node:path';
 import { toUnifiedUri } from '../helper';
 import fs from 'node:fs';
 import type { CdsEnvironment } from '../../../src';
-import { create as createStorage } from 'mem-fs';
-import { create } from 'mem-fs-editor';
 
 const DATA_ROOT = join(__dirname, '..', 'data');
 const PROJECT_ROOT = join(DATA_ROOT, 'project');
@@ -116,54 +114,41 @@ describe('resolve', () => {
 
         const DATA_ROOT = join(__dirname, '..', 'data');
         const PROJECT_ROOT = join(DATA_ROOT, 'project');
-        test('i18n folder exists in passed subpath', async () => {
+        test('i18n folder exists in passed subpath', () => {
             const env: CdsEnvironment = {
                 i18n: {
                     folders: ['_i18n', 'i18n', 'assets/i18n'],
                     default_language: 'en'
                 }
             };
-            const result = await getCapI18nFolder(
+            const result = getCapI18nFolder(
                 PROJECT_ROOT,
                 join(PROJECT_ROOT, 'app', 'properties-csv', 'service.cds'),
                 env
             );
             expect(result).toStrictEqual(join(PROJECT_ROOT, 'app', 'properties-csv', '_i18n'));
         });
-        test('i18n folder exists in root', async () => {
+        test('i18n folder exists in root', () => {
             const env: CdsEnvironment = {
                 i18n: {
                     folders: ['_i18n', 'i18n', 'assets/i18n'],
                     default_language: 'en'
                 }
             };
-            const result = await getCapI18nFolder(PROJECT_ROOT, join(PROJECT_ROOT, 'app', 'dummy'), env);
+            const result = getCapI18nFolder(PROJECT_ROOT, join(PROJECT_ROOT, 'app', 'dummy'), env);
             expect(result).toStrictEqual(join(PROJECT_ROOT, 'i18n'));
         });
-        test('i18n folder does not exist', async () => {
-            const mkdirSpy = jest.spyOn(fs.promises, 'mkdir').mockResolvedValue(undefined);
+        test('i18n folder does not exist — returns default path, no mkdir', () => {
+            const existsSpy = jest.spyOn(fs, 'existsSync').mockReturnValue(false);
             const env: CdsEnvironment = {
                 i18n: {
                     folders: ['_i18n', 'i18n', 'assets/i18n'],
                     default_language: 'en'
                 }
             };
-            const result = await getCapI18nFolder('root', 'file-path', env);
+            const result = getCapI18nFolder('root', 'file-path', env);
             expect(result).toStrictEqual(join('root', '_i18n'));
-            expect(mkdirSpy).toHaveBeenNthCalledWith(1, join('root', '_i18n'));
-        });
-        test('mem-fs-editor - folder is not created', async () => {
-            const mkdirSpy = jest.spyOn(fs.promises, 'mkdir').mockResolvedValue(undefined);
-            const env: CdsEnvironment = {
-                i18n: {
-                    folders: ['_i18n', 'i18n', 'assets/i18n'],
-                    default_language: 'en'
-                }
-            };
-            const memFs = create(createStorage());
-            const result = await getCapI18nFolder('root', 'file-path', env, memFs);
-            expect(result).toStrictEqual(join('root', '_i18n'));
-            expect(mkdirSpy).toHaveBeenCalledTimes(0);
+            expect(existsSpy).toHaveBeenCalled();
         });
     });
 });
