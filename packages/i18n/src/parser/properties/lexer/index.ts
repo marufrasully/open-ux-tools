@@ -64,15 +64,6 @@ function isSeparator(character: string | undefined): boolean {
 }
 
 /**
- * Check if character is escape character.
- *
- * @param character character to check
- * @returns boolean
- */
-function isEscapeS(character: string | undefined): boolean {
-    return character === '\\';
-}
-/**
  * Clean spaces after escape characters.
  *
  * @param text text to be cleaned
@@ -184,7 +175,7 @@ class PropertiesTokenizer {
     /**
      * Consume whitespace.
      */
-    consumeWhitespace() {
+    consumeWhitespace(): void {
         const start = this.offset;
         const token = this.peekToken(this.getTokens().length - 1);
 
@@ -204,7 +195,7 @@ class PropertiesTokenizer {
     /**
      * Consume comment.
      */
-    consumeComment() {
+    consumeComment(): void {
         const start = this.offset;
         // first check there is another character
         while (this.peek() && !isEndOfLine(this.peek())) {
@@ -217,7 +208,7 @@ class PropertiesTokenizer {
     /**
      * Consume key.
      */
-    consumeKey() {
+    consumeKey(): void {
         const start = this.offset;
         while (this.peek()) {
             const character = this.peek();
@@ -228,7 +219,7 @@ class PropertiesTokenizer {
                 break;
             }
 
-            if (isEscapeS(character)) {
+            if (isEscape(character)) {
                 // consume escape char and it's following char
                 this.next(2);
                 continue;
@@ -259,7 +250,7 @@ class PropertiesTokenizer {
      *
      * @param start start of offset.
      */
-    consumeValue(start = this.offset) {
+    consumeValue(start = this.offset): void {
         while (this.peek()) {
             const character = this.peek();
             if (isEscape(character)) {
@@ -278,7 +269,7 @@ class PropertiesTokenizer {
     /**
      * Consume end of line.
      */
-    consumeEndOfLine() {
+    consumeEndOfLine(): void {
         const start = this.offset;
         // incase of multiple line breaks
         while (isEndOfLine(this.peek())) {
@@ -294,7 +285,7 @@ class PropertiesTokenizer {
      * @param start start of offset
      * @param addToken boolean to add to tokens or not
      */
-    consumeEscape(start: number, addToken = true) {
+    consumeEscape(start: number, addToken = true): void {
         const escape = this.collectEscape();
         if (escape.length % 2 === 0) {
             const end = this.offset;
@@ -309,7 +300,7 @@ class PropertiesTokenizer {
 
         while (this.peek()) {
             const char = this.peek();
-            if (isEscapeS(char)) {
+            if (isEscape(char)) {
                 this.consumeEscape(start, false);
                 continue;
             }
@@ -327,41 +318,12 @@ class PropertiesTokenizer {
     /**
      * Consume separator.
      */
-    consumeSeparator() {
+    consumeSeparator(): void {
         const start = this.offset;
         // consume one character
         this.next();
         const end = this.offset;
         this.tokens.push(this.createToken('separator', start, end));
-    }
-    /**
-     * Tokenize a text.
-     */
-    tokenize() {
-        while (this.peek()) {
-            const character = this.peek();
-            if (isWhitespace(character)) {
-                this.consumeWhitespace();
-                continue;
-            }
-            if (isEndOfLine(character)) {
-                this.consumeEndOfLine();
-                continue;
-            }
-            if (isComment(character)) {
-                this.consumeComment();
-                continue;
-            }
-            if (isSeparator(character)) {
-                this.consumeSeparator();
-                continue;
-            }
-            if (isValue(this.getTokens())) {
-                this.consumeValue();
-                continue;
-            }
-            this.consumeKey();
-        }
     }
     /**
      * Get list of tokens.
@@ -379,8 +341,31 @@ class PropertiesTokenizer {
  * @param text text
  * @returns list of tokens
  */
-export function tokenize(text: string) {
+export function tokenize(text: string): Token[] {
     const tokenizer = new PropertiesTokenizer(text);
-    tokenizer.tokenize();
+    while (tokenizer.peek()) {
+        const character = tokenizer.peek();
+        if (isWhitespace(character)) {
+            tokenizer.consumeWhitespace();
+            continue;
+        }
+        if (isEndOfLine(character)) {
+            tokenizer.consumeEndOfLine();
+            continue;
+        }
+        if (isComment(character)) {
+            tokenizer.consumeComment();
+            continue;
+        }
+        if (isSeparator(character)) {
+            tokenizer.consumeSeparator();
+            continue;
+        }
+        if (isValue(tokenizer.getTokens())) {
+            tokenizer.consumeValue();
+            continue;
+        }
+        tokenizer.consumeKey();
+    }
     return tokenizer.getTokens();
 }
