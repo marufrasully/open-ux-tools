@@ -1,5 +1,5 @@
 import type { I18nAnnotation } from '../types';
-import { getI18nMaxLength, getI18nTextType } from './text';
+import { getI18nMaxLength, getI18nTextType, getAnnotationPrefix } from './annotation';
 
 /**
  * Creates annotation text in .properties file format
@@ -17,8 +17,7 @@ export function printPropertiesI18nAnnotation(text: string, annotation?: string 
     }
 
     if (typeof annotation === 'string') {
-        const prefix = text.length <= 120 ? 'X' : 'Y';
-        return `${prefix}${annotation}`;
+        return `${getAnnotationPrefix(text)}${annotation}`;
     }
 
     if (typeof annotation === 'object') {
