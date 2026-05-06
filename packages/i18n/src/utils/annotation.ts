@@ -35,11 +35,11 @@ export function getI18nTextType(maxLength: number): SapTextType {
 
 /**
  * Derive the SAP annotation prefix character for a string annotation.
- * Texts up to 120 characters use 'X' (short text); longer texts use 'Y' (long text).
+ * Delegates to getI18nTextType so the short/long text boundary is defined once.
  *
  * @param text - i18n entry value
- * @returns 'X' or 'Y'
+ * @returns 'X' for short text (≤ threshold), 'Y' for long text
  */
 export function getAnnotationPrefix(text: string): 'X' | 'Y' {
-    return text.length <= 120 ? 'X' : 'Y';
+    return getI18nTextType(text.length) === SapShortTextType.Label ? 'X' : 'Y';
 }
