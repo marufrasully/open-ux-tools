@@ -42,24 +42,38 @@ export async function writeToExistingI18nPropertiesFile(
     keysToRemove: string[] = [],
     fs?: Editor
 ): Promise<boolean> {
-    let newContent = newI18nEntries
-        .map((entry) => printPropertiesI18nEntry(entry.key, entry.value, entry.annotation))
-        .join('');
-
     let content = await readFile(i18nFilePath, fs);
-
     if (keysToRemove.length) {
         content = removeKeysFromI18nPropertiesFile(content, keysToRemove);
     }
-
-    const lines = content.split(/\r\n|\n/);
-    // check if file does not end with new line
-    if (lines.length > 0 && lines[lines.length - 1].trim()) {
-        // If there no end line - add new gap line before new content
-        newContent = `\n${newContent}`;
-    }
-    await writeFile(i18nFilePath, content.concat(newContent), fs);
+    const addition = prependGapIfNeeded(content, formatNewEntries(newI18nEntries));
+    await writeFile(i18nFilePath, content.concat(addition), fs);
     return true;
+}
+
+/**
+ * Formats an array of new i18n entries into a properties file string.
+ *
+ * @param entries new i18n entries
+ * @returns formatted string
+ */
+function formatNewEntries(entries: NewI18nEntry[]): string {
+    return entries.map((entry) => printPropertiesI18nEntry(entry.key, entry.value, entry.annotation)).join('');
+}
+
+/**
+ * Prepends a blank gap line to `addition` when `existing` does not end with a newline.
+ *
+ * @param existing current file content
+ * @param addition new content to append
+ * @returns addition, optionally prefixed with `\n`
+ */
+function prependGapIfNeeded(existing: string, addition: string): string {
+    const lines = existing.split(/\r\n|\n/);
+    if (lines.length > 0 && lines[lines.length - 1].trim()) {
+        return `\n${addition}`;
+    }
+    return addition;
 }
 
 /**
