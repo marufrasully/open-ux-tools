@@ -3,6 +3,13 @@ import type { ParseResult } from './types';
 import { parseProperties } from './properties/parser';
 import { parseCsv } from './csv/parser';
 
+type Parser = (text: string) => ParseResult;
+
+const parsers: Partial<Record<FileFormat, Parser>> = {
+    [FileFormat.properties]: parseProperties,
+    [FileFormat.csv]: parseCsv
+};
+
 /**
  * Parse text.
  *
@@ -11,8 +18,9 @@ import { parseCsv } from './csv/parser';
  * @returns parse result
  */
 export function parse(text: string, format: FileFormat): ParseResult {
-    if (format === FileFormat.properties) {
-        return parseProperties(text);
+    const parser = parsers[format];
+    if (!parser) {
+        throw new Error(`Unsupported file format: ${format}`);
     }
-    return parseCsv(text);
+    return parser(text);
 }
