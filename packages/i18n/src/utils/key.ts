@@ -58,27 +58,35 @@ export function extractDoubleCurlyBracketsKey(input: string): string | undefined
 }
 
 /**
- * Get unique key. If the key is not unique, it increment key by one and recheck.
+ * Recursive unique-key finder operating on a pre-adapted lookup.
+ *
+ * @param key candidate key
+ * @param lookup pre-adapted key-existence check
+ * @param originalKey base key (no counter suffix)
+ * @param counter next counter to append when a collision is found
+ * @returns first key not found in lookup
+ */
+function findUniqueKey(key: string, lookup: KeyedI18nLookup, originalKey: string, counter: number): string {
+    if (lookup.hasKey(key)) {
+        return findUniqueKey(`${originalKey}${counter}`, lookup, originalKey, counter + 1);
+    }
+    return key;
+}
+
+/**
+ * Get unique key. If the key is not unique, it increments the key by one and rechecks.
  *
  * @param key new key and it is incremented
- * @param i18nData I18n entries or bundle — or a pre-adapted KeyedI18nLookup
+ * @param i18nData I18n entries or bundle
  * @param originalKey original key without any index increment
  * @param counter counter for increment
  * @returns unique key
  */
 export function getI18nUniqueKey(
     key: string,
-    i18nData: I18nEntry[] | I18nBundle | KeyedI18nLookup,
+    i18nData: I18nEntry[] | I18nBundle,
     originalKey = key,
     counter = 1
 ): string {
-    const lookup: KeyedI18nLookup =
-        typeof (i18nData as KeyedI18nLookup).hasKey === 'function'
-            ? (i18nData as KeyedI18nLookup)
-            : toKeyedLookup(i18nData as I18nEntry[] | I18nBundle);
-
-    if (lookup.hasKey(key)) {
-        return getI18nUniqueKey(`${originalKey}${counter}`, lookup, originalKey, counter + 1);
-    }
-    return key;
+    return findUniqueKey(key, toKeyedLookup(i18nData), originalKey, counter);
 }
