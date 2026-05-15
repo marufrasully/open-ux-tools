@@ -3,6 +3,7 @@ import { SapShortTextType } from '../../../../src';
 import * as utils from '../../../../src/utils';
 import { create as createStorage } from 'mem-fs';
 import { create, type Editor } from 'mem-fs-editor';
+import { memFsBackend } from '../../../../src/utils';
 
 describe('index', () => {
     describe('writeToExistingI18nPropertiesFile', () => {
@@ -23,12 +24,12 @@ describe('index', () => {
             const result = await writeToExistingI18nPropertiesFile('i18n.properties', entries);
             // assert
             expect(result).toEqual(true);
-            expect(readFileSpy).toHaveBeenNthCalledWith(1, 'i18n.properties', undefined);
+            expect(readFileSpy).toHaveBeenNthCalledWith(1, 'i18n.properties', expect.any(Object));
             expect(writeFileSpy).toHaveBeenNthCalledWith(
                 1,
                 'i18n.properties',
                 'key = value\n\n#XFLD,27\nNewKey=New Value\n',
-                undefined
+                expect.any(Object)
             );
         });
         test('file does not end with new line', async () => {
@@ -44,12 +45,12 @@ describe('index', () => {
             ]);
             // assert
             expect(result).toEqual(true);
-            expect(readFileSpy).toHaveBeenNthCalledWith(1, 'i18n.properties', undefined);
+            expect(readFileSpy).toHaveBeenNthCalledWith(1, 'i18n.properties', expect.any(Object));
             expect(writeFileSpy).toHaveBeenNthCalledWith(
                 1,
                 'i18n.properties',
                 'key = value\n\n#XFLD,27\nNewKey=New Value\n',
-                undefined
+                expect.any(Object)
             );
         });
         test('multiple entries', async () => {
@@ -69,12 +70,12 @@ describe('index', () => {
             ]);
             // assert
             expect(result).toEqual(true);
-            expect(readFileSpy).toHaveBeenNthCalledWith(1, 'i18n.properties', undefined);
+            expect(readFileSpy).toHaveBeenNthCalledWith(1, 'i18n.properties', expect.any(Object));
             expect(writeFileSpy).toHaveBeenNthCalledWith(
                 1,
                 'i18n.properties',
                 '\n#XFLD,27\nExistingKey=New Value\n\n#XFLD,27\nNewKey=New Value\n\n#XFLD,30\nNewKey2=New Value2\n',
-                undefined
+                expect.any(Object)
             );
         });
         describe('with annotation', () => {
@@ -94,12 +95,12 @@ describe('index', () => {
                 ]);
                 // assert
                 expect(result).toEqual(true);
-                expect(readFileSpy).toHaveBeenNthCalledWith(1, 'i18n.properties', undefined);
+                expect(readFileSpy).toHaveBeenNthCalledWith(1, 'i18n.properties', expect.any(Object));
                 expect(writeFileSpy).toHaveBeenNthCalledWith(
                     1,
                     'i18n.properties',
                     '\n#XFLD,27\nExistingKey=New Value\n\n#XTIT: Name\nNewKey=New Value\n',
-                    undefined
+                    expect.any(Object)
                 );
             });
             test('object', async () => {
@@ -118,18 +119,18 @@ describe('index', () => {
                 ]);
                 // assert
                 expect(result).toEqual(true);
-                expect(readFileSpy).toHaveBeenNthCalledWith(1, 'i18n.properties', undefined);
+                expect(readFileSpy).toHaveBeenNthCalledWith(1, 'i18n.properties', expect.any(Object));
                 expect(writeFileSpy).toHaveBeenNthCalledWith(
                     1,
                     'i18n.properties',
                     '\n#XFLD,27\nExistingKey=New Value\n\n#XFLD,27\nNewKey=New Value\n',
-                    undefined
+                    expect.any(Object)
                 );
             });
         });
         describe('with keys to remove', () => {
             const i18nFilePath = '/path/to/i18n.properties';
-            const fs: Editor = {} as Editor;
+            const backend = memFsBackend({ exists: jest.fn() } as unknown as Editor);
 
             beforeEach(() => {
                 jest.clearAllMocks();
@@ -151,7 +152,7 @@ describe('index', () => {
                 ];
                 const keysToRemove = ['key2'];
 
-                await writeToExistingI18nPropertiesFile(i18nFilePath, newI18nEntries, keysToRemove, fs);
+                await writeToExistingI18nPropertiesFile(i18nFilePath, newI18nEntries, keysToRemove, backend);
 
                 expect(utils.writeFile).toHaveBeenCalledWith(
                     i18nFilePath,
@@ -164,7 +165,7 @@ describe('index', () => {
                         'key5=newValue5 # Some annotation',
                         ''
                     ].join('\n'),
-                    fs
+                    backend
                 );
             });
 
@@ -184,12 +185,12 @@ describe('index', () => {
                 const newI18nEntries = [{ key: 'key6', value: 'newValue6', annotation: undefined }];
                 const keysToRemove = ['key1', 'key2'];
 
-                await writeToExistingI18nPropertiesFile(i18nFilePath, newI18nEntries, keysToRemove, fs);
+                await writeToExistingI18nPropertiesFile(i18nFilePath, newI18nEntries, keysToRemove, backend);
 
                 expect(utils.writeFile).toHaveBeenCalledWith(
                     i18nFilePath,
                     ['key3=oldValue3', 'key6=newValue6', ''].join('\n'),
-                    fs
+                    backend
                 );
             });
 
@@ -198,12 +199,12 @@ describe('index', () => {
                 const newI18nEntries = [{ key: 'key7', value: 'newValue7', annotation: undefined }];
                 const keysToRemove: string[] = [];
 
-                await writeToExistingI18nPropertiesFile(i18nFilePath, newI18nEntries, keysToRemove, fs);
+                await writeToExistingI18nPropertiesFile(i18nFilePath, newI18nEntries, keysToRemove, backend);
 
                 expect(utils.writeFile).toHaveBeenCalledWith(
                     i18nFilePath,
                     ['key1=oldValue1', 'key2=oldValue2', 'key7=newValue7', ''].join('\n'),
-                    fs
+                    backend
                 );
             });
 
@@ -215,12 +216,12 @@ describe('index', () => {
                 ];
                 const keysToRemove: string[] = [];
 
-                await writeToExistingI18nPropertiesFile(i18nFilePath, newI18nEntries, keysToRemove, fs);
+                await writeToExistingI18nPropertiesFile(i18nFilePath, newI18nEntries, keysToRemove, backend);
 
                 expect(utils.writeFile).toHaveBeenCalledWith(
                     i18nFilePath,
                     ['key8=newValue8', 'key9=newValue9', ''].join('\n'),
-                    fs
+                    backend
                 );
             });
 
@@ -231,13 +232,13 @@ describe('index', () => {
                 const newI18nEntries = [{ key: 'key4', value: 'newValue4', annotation: undefined }];
                 const keysToRemove = ['key3'];
 
-                await writeToExistingI18nPropertiesFile(i18nFilePath, newI18nEntries, keysToRemove, fs);
+                await writeToExistingI18nPropertiesFile(i18nFilePath, newI18nEntries, keysToRemove, backend);
 
                 // The comment and empty line above key2 should remain, but if there were only comments/empty lines above, they would be removed.
                 expect(utils.writeFile).toHaveBeenCalledWith(
                     i18nFilePath,
                     ['# Comment', '', 'key1=oldValue1', 'key2=oldValue2', 'key4=newValue4', ''].join('\n'),
-                    fs
+                    backend
                 );
             });
         });
@@ -246,16 +247,17 @@ describe('index', () => {
             const readFileSpy = jest.spyOn(utils, 'readFile').mockResolvedValue('key = value\n');
             const writeFileSpy = jest.spyOn(utils, 'writeFile').mockResolvedValue();
             const memFs = create(createStorage());
+            const backend = memFsBackend(memFs);
             // act
-            const result = await writeToExistingI18nPropertiesFile('i18n.properties', entries, [], memFs);
+            const result = await writeToExistingI18nPropertiesFile('i18n.properties', entries, [], backend);
             // assert
             expect(result).toEqual(true);
-            expect(readFileSpy).toHaveBeenNthCalledWith(1, 'i18n.properties', memFs);
+            expect(readFileSpy).toHaveBeenNthCalledWith(1, 'i18n.properties', backend);
             expect(writeFileSpy).toHaveBeenNthCalledWith(
                 1,
                 'i18n.properties',
                 'key = value\n\n#XFLD,27\nNewKey=New Value\n',
-                memFs
+                backend
             );
         });
     });

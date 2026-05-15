@@ -4,6 +4,7 @@ import { getCapI18nBundle } from '../../../../src';
 import { replaceBundleWithUnifiedFileUri } from '../../helper';
 import { create as createStorage } from 'mem-fs';
 import { create } from 'mem-fs-editor';
+import { memFsBackend } from '../../../../src/utils';
 
 const DATA_ROOT = join(__dirname, '..', '..', 'data');
 const PROJECT_ROOT = join(DATA_ROOT, 'project');
@@ -77,7 +78,12 @@ describe('getCapI18nBundle', () => {
 
     test('single .properties file - mem-fs-editor', async () => {
         const memFs = create(createStorage());
-        const bundle = await getCapI18nBundle(PROJECT_ROOT, env, [join(PROJECT_ROOT, 'srv', 'service.cds')], memFs);
+        const bundle = await getCapI18nBundle(
+            PROJECT_ROOT,
+            env,
+            [join(PROJECT_ROOT, 'srv', 'service.cds')],
+            memFsBackend(memFs)
+        );
         replaceBundleWithUnifiedFileUri(PROJECT_ROOT, bundle);
         expect(bundle).toMatchSnapshot();
     });

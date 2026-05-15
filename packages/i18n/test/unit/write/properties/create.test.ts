@@ -4,7 +4,7 @@ import * as utils from '../../../../src/utils';
 import { create as createStorage } from 'mem-fs';
 import { create } from 'mem-fs-editor';
 import { basename } from 'node:path';
-import type { Editor } from 'mem-fs-editor';
+import { memFsBackend } from '../../../../src/utils';
 
 describe('create', () => {
     describe('createPropertiesI18nEntries', () => {
@@ -25,13 +25,18 @@ describe('create', () => {
                 const result = await createPropertiesI18nEntries('i18n.properties', newEntries);
                 expect(result).toEqual(true);
                 expect(doesExistSpy).toHaveBeenCalledTimes(1);
-                expect(writeFileSpy).toHaveBeenNthCalledWith(1, 'i18n.properties', '# Resource bundle \n', undefined);
+                expect(writeFileSpy).toHaveBeenNthCalledWith(
+                    1,
+                    'i18n.properties',
+                    '# Resource bundle \n',
+                    expect.any(Object)
+                );
                 expect(writeToExistingI18nPropertiesFileSpy).toHaveBeenNthCalledWith(
                     1,
                     'i18n.properties',
                     newEntries,
                     [],
-                    undefined
+                    expect.any(Object)
                 );
             });
             test('with root', async () => {
@@ -47,14 +52,14 @@ describe('create', () => {
                     1,
                     'i18n.properties',
                     '# This is the resource bundle for my-project\n',
-                    undefined
+                    expect.any(Object)
                 );
                 expect(writeToExistingI18nPropertiesFileSpy).toHaveBeenNthCalledWith(
                     1,
                     'i18n.properties',
                     newEntries,
                     [],
-                    undefined
+                    expect.any(Object)
                 );
             });
             test('mem-fs-editor', async () => {
@@ -62,20 +67,21 @@ describe('create', () => {
                     .spyOn(utilsWrite, 'writeToExistingI18nPropertiesFile')
                     .mockResolvedValue(true);
                 const memFs = create(createStorage());
+                const backend = memFsBackend(memFs);
                 const doesExistSpy = jest.spyOn(utils, 'doesExist').mockResolvedValue(false);
                 const writeFileSpy = jest.spyOn(utils, 'writeFile').mockResolvedValue();
 
-                const result = await createPropertiesI18nEntries('i18n.properties', newEntries, undefined, memFs);
+                const result = await createPropertiesI18nEntries('i18n.properties', newEntries, undefined, backend);
 
                 expect(result).toEqual(true);
-                expect(doesExistSpy).toHaveBeenCalledTimes(0);
-                expect(writeFileSpy).toHaveBeenNthCalledWith(1, 'i18n.properties', '# Resource bundle \n', memFs);
+                expect(doesExistSpy).toHaveBeenCalledTimes(1);
+                expect(writeFileSpy).toHaveBeenNthCalledWith(1, 'i18n.properties', '# Resource bundle \n', backend);
                 expect(writeToExistingI18nPropertiesFileSpy).toHaveBeenNthCalledWith(
                     1,
                     'i18n.properties',
                     newEntries,
                     [],
-                    memFs
+                    backend
                 );
             });
         });
@@ -92,7 +98,7 @@ describe('create', () => {
                 'i18n.properties',
                 newEntries,
                 [],
-                undefined
+                expect.any(Object)
             );
         });
         test('create a new i18n file if it does not exist in both real and virtual file systems', async () => {
@@ -100,44 +106,42 @@ describe('create', () => {
             const root = 'path/to/root';
             const doesExistSpy = jest.spyOn(utils, 'doesExist').mockResolvedValue(false);
             const memFs = create(createStorage());
-            memFs.exists = jest.fn().mockReturnValue(false);
+            const backend = memFsBackend(memFs);
             const writeFileSpy = jest.spyOn(utils, 'writeFile').mockResolvedValue();
             const writeToExistingI18nPropertiesFileSpy = jest
                 .spyOn(utilsWrite, 'writeToExistingI18nPropertiesFile')
                 .mockResolvedValue(true);
 
-            await createPropertiesI18nEntries(i18nFilePath, newEntries, root, memFs);
+            await createPropertiesI18nEntries(i18nFilePath, newEntries, root, backend);
 
-            expect(doesExistSpy).not.toHaveBeenCalled();
-            expect(memFs.exists).toHaveBeenCalledWith(i18nFilePath);
+            expect(doesExistSpy).toHaveBeenCalledWith(i18nFilePath, backend);
             expect(writeFileSpy).toHaveBeenCalledWith(
                 i18nFilePath,
                 `# This is the resource bundle for ${basename(root)}\n`,
-                memFs
+                backend
             );
-            expect(writeToExistingI18nPropertiesFileSpy).toHaveBeenCalledWith(i18nFilePath, newEntries, [], memFs);
+            expect(writeToExistingI18nPropertiesFileSpy).toHaveBeenCalledWith(i18nFilePath, newEntries, [], backend);
         });
         test('create a new i18n file if it exists in the real file system, but does not exist in the passed virtual file system', async () => {
             const i18nFilePath = 'path/to/i18n.properties';
             const root = 'path/to/root';
-            const doesExistSpy = jest.spyOn(utils, 'doesExist').mockResolvedValue(true);
+            const doesExistSpy = jest.spyOn(utils, 'doesExist').mockResolvedValue(false);
             const memFs = create(createStorage());
-            memFs.exists = jest.fn().mockReturnValue(false);
+            const backend = memFsBackend(memFs);
             const writeFileSpy = jest.spyOn(utils, 'writeFile').mockResolvedValue();
             const writeToExistingI18nPropertiesFileSpy = jest
                 .spyOn(utilsWrite, 'writeToExistingI18nPropertiesFile')
                 .mockResolvedValue(true);
 
-            await createPropertiesI18nEntries(i18nFilePath, newEntries, root, memFs);
+            await createPropertiesI18nEntries(i18nFilePath, newEntries, root, backend);
 
-            expect(doesExistSpy).not.toHaveBeenCalled();
-            expect(memFs.exists).toHaveBeenCalledWith(i18nFilePath);
+            expect(doesExistSpy).toHaveBeenCalledWith(i18nFilePath, backend);
             expect(writeFileSpy).toHaveBeenCalledWith(
                 i18nFilePath,
                 `# This is the resource bundle for ${basename(root)}\n`,
-                memFs
+                backend
             );
-            expect(writeToExistingI18nPropertiesFileSpy).toHaveBeenCalledWith(i18nFilePath, newEntries, [], memFs);
+            expect(writeToExistingI18nPropertiesFileSpy).toHaveBeenCalledWith(i18nFilePath, newEntries, [], backend);
         });
         test('exception / error case', async () => {
             jest.spyOn(utilsWrite, 'writeToExistingI18nPropertiesFile').mockImplementation(() => {
@@ -165,7 +169,8 @@ describe('create', () => {
         const newEntries = [{ key: 'NewKey', value: 'New Value' }];
         const keysToRemove = ['OldKey'];
         const root = '/some/project/root';
-        const memFs = { exists: jest.fn() } as unknown as Editor;
+        const memFs = create(createStorage());
+        const backend = memFsBackend(memFs);
 
         beforeEach(() => {
             jest.resetAllMocks();
@@ -180,33 +185,36 @@ describe('create', () => {
 
             await removeAndCreateI18nEntries(i18nFilePath, newEntries, keysToRemove, root);
 
-            expect(doesExistSpy).toHaveBeenCalledWith(i18nFilePath);
+            expect(doesExistSpy).toHaveBeenCalledWith(i18nFilePath, expect.any(Object));
             expect(createNewI18nFileSpy).toHaveBeenCalledWith(
                 i18nFilePath,
                 `# This is the resource bundle for ${basename(root)}\n`,
-                undefined
+                expect.any(Object)
             );
-            expect(replaceI18nPropertiesSpy).toHaveBeenCalledWith(i18nFilePath, newEntries, keysToRemove, undefined);
+            expect(replaceI18nPropertiesSpy).toHaveBeenCalledWith(
+                i18nFilePath,
+                newEntries,
+                keysToRemove,
+                expect.any(Object)
+            );
         });
 
         it('creates a new i18n file if it does not exist (mem-fs)', async () => {
-            memFs.exists = jest.fn().mockReturnValue(false);
-            const doesExistSpy = jest.spyOn(utils, 'doesExist');
+            const doesExistSpy = jest.spyOn(utils, 'doesExist').mockResolvedValue(false);
             const createNewI18nFileSpy = jest.spyOn(utils, 'writeFile').mockResolvedValue();
             const replaceI18nPropertiesSpy = jest
                 .spyOn(utilsWrite, 'writeToExistingI18nPropertiesFile')
                 .mockResolvedValue(true);
 
-            await removeAndCreateI18nEntries(i18nFilePath, newEntries, keysToRemove, root, memFs);
+            await removeAndCreateI18nEntries(i18nFilePath, newEntries, keysToRemove, root, backend);
 
-            expect(doesExistSpy).not.toHaveBeenCalled();
-            expect(memFs.exists).toHaveBeenCalledWith(i18nFilePath);
+            expect(doesExistSpy).toHaveBeenCalledWith(i18nFilePath, backend);
             expect(createNewI18nFileSpy).toHaveBeenCalledWith(
                 i18nFilePath,
                 `# This is the resource bundle for ${basename(root)}\n`,
-                memFs
+                backend
             );
-            expect(replaceI18nPropertiesSpy).toHaveBeenCalledWith(i18nFilePath, newEntries, keysToRemove, memFs);
+            expect(replaceI18nPropertiesSpy).toHaveBeenCalledWith(i18nFilePath, newEntries, keysToRemove, backend);
         });
 
         it('calls replaceI18nProperties if file exists (real fs)', async () => {
@@ -218,25 +226,28 @@ describe('create', () => {
 
             await removeAndCreateI18nEntries(i18nFilePath, newEntries, keysToRemove);
 
-            expect(doesExistSpy).toHaveBeenCalledWith(i18nFilePath);
+            expect(doesExistSpy).toHaveBeenCalledWith(i18nFilePath, expect.any(Object));
             expect(createNewI18nFileSpy).not.toHaveBeenCalled();
-            expect(replaceI18nPropertiesSpy).toHaveBeenCalledWith(i18nFilePath, newEntries, keysToRemove, undefined);
+            expect(replaceI18nPropertiesSpy).toHaveBeenCalledWith(
+                i18nFilePath,
+                newEntries,
+                keysToRemove,
+                expect.any(Object)
+            );
         });
 
         it('calls replaceI18nProperties if file exists (mem-fs)', async () => {
-            memFs.exists = jest.fn().mockReturnValue(true);
-            const doesExistSpy = jest.spyOn(utils, 'doesExist');
+            const doesExistSpy = jest.spyOn(utils, 'doesExist').mockResolvedValue(true);
             const createNewI18nFileSpy = jest.spyOn(utils, 'writeFile');
             const replaceI18nPropertiesSpy = jest
                 .spyOn(utilsWrite, 'writeToExistingI18nPropertiesFile')
                 .mockResolvedValue(true);
 
-            await removeAndCreateI18nEntries(i18nFilePath, newEntries, keysToRemove, root, memFs);
+            await removeAndCreateI18nEntries(i18nFilePath, newEntries, keysToRemove, root, backend);
 
-            expect(doesExistSpy).not.toHaveBeenCalled();
-            expect(memFs.exists).toHaveBeenCalledWith(i18nFilePath);
+            expect(doesExistSpy).toHaveBeenCalledWith(i18nFilePath, backend);
             expect(createNewI18nFileSpy).not.toHaveBeenCalled();
-            expect(replaceI18nPropertiesSpy).toHaveBeenCalledWith(i18nFilePath, newEntries, keysToRemove, memFs);
+            expect(replaceI18nPropertiesSpy).toHaveBeenCalledWith(i18nFilePath, newEntries, keysToRemove, backend);
         });
 
         it('uses default keysToRemove and root', async () => {
@@ -247,8 +258,8 @@ describe('create', () => {
 
             await removeAndCreateI18nEntries(i18nFilePath, newEntries);
 
-            expect(doesExistSpy).toHaveBeenCalledWith(i18nFilePath);
-            expect(replaceI18nPropertiesSpy).toHaveBeenCalledWith(i18nFilePath, newEntries, [], undefined);
+            expect(doesExistSpy).toHaveBeenCalledWith(i18nFilePath, expect.any(Object));
+            expect(replaceI18nPropertiesSpy).toHaveBeenCalledWith(i18nFilePath, newEntries, [], expect.any(Object));
         });
     });
 });

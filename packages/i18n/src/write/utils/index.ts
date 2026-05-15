@@ -1,6 +1,6 @@
 import type { NewI18nEntry } from '../../types';
-import { printPropertiesI18nEntry, readFile, writeFile, doesExist } from '../../utils';
-import type { Editor } from 'mem-fs-editor';
+import { printPropertiesI18nEntry, readFile, writeFile, doesExist, nodeFsBackend } from '../../utils';
+import type { StorageBackend } from '../../utils';
 import { Range, TextEdit } from '@sap-ux/text-document-utils';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { parseProperties } from '../../parser/properties/parser';
@@ -11,19 +11,19 @@ import { parseProperties } from '../../parser/properties/parser';
  *
  * @param filePath absolute path to the file
  * @param transform pure function that converts current content to new content
- * @param fs optional `mem-fs-editor` instance
+ * @param backend storage backend to use. Defaults to Node.js `fs/promises`.
  * @returns boolean
  */
 export async function tryUpdateFile(
     filePath: string,
     transform: (content: string) => string,
-    fs?: Editor
+    backend: StorageBackend = nodeFsBackend
 ): Promise<boolean> {
-    if (!(await doesExist(filePath))) {
+    if (!(await doesExist(filePath, backend))) {
         return false;
     }
-    const content = await readFile(filePath, fs);
-    await writeFile(filePath, transform(content), fs);
+    const content = await readFile(filePath, backend);
+    await writeFile(filePath, transform(content), backend);
     return true;
 }
 
@@ -33,21 +33,21 @@ export async function tryUpdateFile(
  * @param i18nFilePath i18n file path
  * @param newI18nEntries  new i18n entries that will be maintained
  * @param keysToRemove - Array of keys to remove from the file.
- * @param fs optional `mem-fs-editor` instance. If provided, `mem-fs-editor` api is used instead of `fs` of node
+ * @param backend storage backend to use. Defaults to Node.js `fs/promises`.
  * @returns boolean
  */
 export async function writeToExistingI18nPropertiesFile(
     i18nFilePath: string,
     newI18nEntries: NewI18nEntry[],
     keysToRemove: string[] = [],
-    fs?: Editor
+    backend: StorageBackend = nodeFsBackend
 ): Promise<boolean> {
-    let content = await readFile(i18nFilePath, fs);
+    let content = await readFile(i18nFilePath, backend);
     if (keysToRemove.length) {
         content = removeKeysFromI18nPropertiesFile(content, keysToRemove);
     }
     const addition = prependGapIfNeeded(content, formatNewEntries(newI18nEntries));
-    await writeFile(i18nFilePath, content.concat(addition), fs);
+    await writeFile(i18nFilePath, content.concat(addition), backend);
     return true;
 }
 

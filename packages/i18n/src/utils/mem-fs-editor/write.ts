@@ -1,17 +1,17 @@
-import { promises } from 'node:fs';
-import type { Editor } from 'mem-fs-editor';
+import { nodeFsBackend } from '../storage-backend';
+import type { StorageBackend } from '../storage-backend';
 
 /**
  * Write data to a file.
  *
  * @param filePath absolute path to a file
  * @param content content to write
- * @param fs optional `mem-fs-editor` instance. If provided, `write` api of `mem-fs-editor` is used.
- * @returns string or void
+ * @param backend storage backend to use. Defaults to Node.js `fs/promises`.
  */
-export async function writeFile(filePath: string, content: string, fs?: Editor): Promise<string | void> {
-    if (fs) {
-        return fs.write(filePath, content);
-    }
-    return promises.writeFile(filePath, content, { encoding: 'utf8' });
+export async function writeFile(
+    filePath: string,
+    content: string,
+    backend: StorageBackend = nodeFsBackend
+): Promise<void> {
+    return backend.write(filePath, content);
 }

@@ -6,13 +6,14 @@ import {
     jsonPath,
     discoverIndent,
     applyIndent,
-    discoverLineEnding
+    discoverLineEnding,
+    nodeFsBackend
 } from '../../utils';
 import { tryUpdateFile } from '../utils';
 import { Range } from '@sap-ux/text-document-utils';
 import type { Node } from 'jsonc-parser';
 import { parseTree } from 'jsonc-parser';
-import type { Editor } from 'mem-fs-editor';
+import type { StorageBackend } from '../../utils';
 
 /**
  * Create full bundle.
@@ -147,15 +148,15 @@ export function addJsonTexts(text: string, fallbackLocale: string, newEntries: N
  * @param env cds environment
  * @param path file path
  * @param newI18nEntries new i18n entries that will be maintained
- * @param fs optional `mem-fs-editor` instance. If provided, `mem-fs-editor` api is used instead of `fs` of node
+ * @param backend storage backend to use. Defaults to Node.js `fs/promises`.
  * @returns boolean
  */
 export async function tryAddJsonTexts(
     env: CdsEnvironment,
     path: string,
     newI18nEntries: NewI18nEntry[],
-    fs?: Editor
+    backend: StorageBackend = nodeFsBackend
 ): Promise<boolean> {
     const { fallbackLanguage } = getI18nConfiguration(env);
-    return tryUpdateFile(jsonPath(path), (content) => addJsonTexts(content, fallbackLanguage, newI18nEntries), fs);
+    return tryUpdateFile(jsonPath(path), (content) => addJsonTexts(content, fallbackLanguage, newI18nEntries), backend);
 }

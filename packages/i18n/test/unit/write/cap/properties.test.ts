@@ -30,7 +30,7 @@ describe('properties', () => {
             const result = await tryAddPropertiesTexts(env, path, entries);
             // assert
             expect(result).toEqual(false);
-            expect(doesExistSpy).toHaveBeenNthCalledWith(1, i18nPath);
+            expect(doesExistSpy).toHaveBeenNthCalledWith(1, i18nPath, expect.any(Object));
         });
         describe('add to existing .properties file', () => {
             test('file ends with new line', async () => {

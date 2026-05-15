@@ -1,6 +1,6 @@
 import { create as createStorage } from 'mem-fs';
 import { create } from 'mem-fs-editor';
-import { writeFile } from '../../../../src/utils';
+import { writeFile, memFsBackend } from '../../../../src/utils';
 import * as fs from 'node:fs';
 
 describe('write', () => {
@@ -12,16 +12,14 @@ describe('write', () => {
             const memFs = create(createStorage());
             const writeSpy = jest.spyOn(memFs, 'write').mockReturnValue(content);
 
-            const result = await writeFile(filePath, content, memFs);
-            expect(result).toEqual('some-content');
+            await writeFile(filePath, content, memFsBackend(memFs));
             expect(writeSpy).toHaveBeenNthCalledWith(1, filePath, content);
             expect(promiseWriteFileSpy).toHaveBeenCalledTimes(0);
         });
-        test('promises.readFile', async () => {
+        test('promises.writeFile', async () => {
             const promiseWriteFileSpy = jest.spyOn(fs.promises, 'writeFile').mockResolvedValue();
 
-            const result = await writeFile(filePath, content);
-            expect(result).toEqual(undefined);
+            await writeFile(filePath, content);
             expect(promiseWriteFileSpy).toHaveBeenNthCalledWith(1, filePath, content, { encoding: 'utf8' });
         });
     });

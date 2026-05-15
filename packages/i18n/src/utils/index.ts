@@ -8,3 +8,5 @@ export { convertToCamelCase, convertToPascalCase } from './string-case';
 export { extractI18nKey, getI18nUniqueKey, extractDoubleCurlyBracketsKey, toKeyedLookup } from './key';
 export type { KeyedI18nLookup } from './key';
 export { readFile, writeFile } from './mem-fs-editor';
+export { nodeFsBackend, memFsBackend } from './storage-backend';
+export type { StorageBackend } from './storage-backend';

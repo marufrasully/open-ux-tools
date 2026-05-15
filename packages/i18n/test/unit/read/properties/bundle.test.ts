@@ -4,6 +4,7 @@ import { getPropertiesI18nBundle } from '../../../../src';
 import { replaceBundleWithUnifiedFileUri } from '../../helper';
 import { create as createStorage } from 'mem-fs';
 import { create } from 'mem-fs-editor';
+import { memFsBackend } from '../../../../src/utils';
 
 describe('bundle', () => {
     const DATA_ROOT = join(__dirname, '..', '..', 'data');
@@ -19,7 +20,7 @@ describe('bundle', () => {
         const memFs = create(createStorage());
         const bundle = await getPropertiesI18nBundle(
             join(PROJECT_ROOT, 'app', 'properties-csv', '_i18n', 'i18n.properties'),
-            memFs
+            memFsBackend(memFs)
         );
         replaceBundleWithUnifiedFileUri(PROJECT_ROOT, bundle);
         expect(bundle).toMatchSnapshot();

@@ -1,17 +1,17 @@
 import { join } from 'node:path';
-import { promises } from 'node:fs';
 import type { CdsEnvironment, NewI18nEntry } from '../../types';
 import {
     getI18nConfiguration,
     resolveCapI18nFolderForFile,
     capPropertiesPath,
     printPropertiesI18nEntry,
-    writeFile
+    writeFile,
+    nodeFsBackend
 } from '../../utils';
+import type { StorageBackend } from '../../utils';
 import { tryAddJsonTexts } from './json';
 import { tryAddCsvTexts } from './csv';
 import { tryAddPropertiesTexts } from './properties';
-import type { Editor } from 'mem-fs-editor';
 
 /**
  * A CAP i18n updater function — tries to add entries to an existing file and returns true on success.
@@ -20,7 +20,7 @@ export type CapI18nUpdater = (
     env: CdsEnvironment,
     filePath: string,
     newI18nEntries: NewI18nEntry[],
-    fs?: Editor
+    backend: StorageBackend
 ) => Promise<boolean>;
 
 /**
@@ -30,7 +30,7 @@ export type CapI18nUpdater = (
  * @param path absolute path to cds file for which translation should be maintained
  * @param newI18nEntries new i18n entries that will be maintained
  * @param env CDS environment configuration
- * @param fs optional `mem-fs-editor` instance. If provided, `mem-fs-editor` api is used instead of `fs` of node
+ * @param backend storage backend to use. Defaults to Node.js `fs/promises`.
  * @param updaters ordered list of write strategies to try; defaults to json, properties, csv
  * @returns boolean or exception
  * @description To create new entries, if tries:
@@ -45,20 +45,19 @@ export async function createCapI18nEntries(
     path: string,
     newI18nEntries: NewI18nEntry[],
     env: CdsEnvironment,
-    fs?: Editor,
+    backend: StorageBackend = nodeFsBackend,
     updaters: CapI18nUpdater[] = [tryAddJsonTexts, tryAddPropertiesTexts, tryAddCsvTexts]
 ): Promise<boolean> {
     const { baseFileName, folders } = getI18nConfiguration(env);
     const resolvedFolder = resolveCapI18nFolderForFile(root, env, path);
     const i18nFolderPath = resolvedFolder ?? join(root, folders[0]);
-    if (!resolvedFolder && !fs) {
-        // create directory when mem-fs-editor is not provided; mem-fs-editor creates it on `.commit()`
-        await promises.mkdir(i18nFolderPath);
+    if (!resolvedFolder) {
+        await backend.mkdir(i18nFolderPath);
     }
     const filePath = join(i18nFolderPath, baseFileName);
 
     for (const update of updaters) {
-        if (await update(env, filePath, newI18nEntries, fs)) {
+        if (await update(env, filePath, newI18nEntries, backend)) {
             return true;
         }
     }
@@ -67,6 +66,6 @@ export async function createCapI18nEntries(
     const newContent = newI18nEntries
         .map((entry) => printPropertiesI18nEntry(entry.key, entry.value, entry.annotation))
         .join('');
-    await writeFile(capPropertiesPath(filePath, env), newContent, fs);
+    await writeFile(capPropertiesPath(filePath, env), newContent, backend);
     return true;
 }

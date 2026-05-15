@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { create as createStorage } from 'mem-fs';
 import { create } from 'mem-fs-editor';
 import fs from 'node:fs';
+import { memFsBackend } from '../../../../src/utils';
 
 describe('createCapI18nEntries', () => {
     const env = Object.freeze({
@@ -39,7 +40,7 @@ describe('createCapI18nEntries', () => {
         // assert
         expect(result).toBeTruthy();
         expect(resolveCapI18nFolderSpy).toHaveBeenNthCalledWith(1, 'root', env, 'path');
-        expect(tryAddJsonTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, undefined);
+        expect(tryAddJsonTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, expect.any(Object));
         expect(tryAddPropertiesTextsSpy).toHaveBeenCalledTimes(0);
         expect(tryAddCsvTextsSpy).toHaveBeenCalledTimes(0);
     });
@@ -56,8 +57,14 @@ describe('createCapI18nEntries', () => {
         // assert
         expect(result).toBeTruthy();
         expect(resolveCapI18nFolderSpy).toHaveBeenNthCalledWith(1, 'root', env, 'path');
-        expect(tryAddJsonTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, undefined);
-        expect(tryAddPropertiesTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, undefined);
+        expect(tryAddJsonTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, expect.any(Object));
+        expect(tryAddPropertiesTextsSpy).toHaveBeenNthCalledWith(
+            1,
+            env,
+            pathToFolderI18n,
+            newEntries,
+            expect.any(Object)
+        );
         expect(tryAddCsvTextsSpy).toHaveBeenCalledTimes(0);
     });
     test('existing csv file', async () => {
@@ -73,9 +80,15 @@ describe('createCapI18nEntries', () => {
         // assert
         expect(result).toBeTruthy();
         expect(resolveCapI18nFolderSpy).toHaveBeenNthCalledWith(1, 'root', env, 'path');
-        expect(tryAddJsonTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, undefined);
-        expect(tryAddPropertiesTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, undefined);
-        expect(tryAddCsvTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, undefined);
+        expect(tryAddJsonTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, expect.any(Object));
+        expect(tryAddPropertiesTextsSpy).toHaveBeenNthCalledWith(
+            1,
+            env,
+            pathToFolderI18n,
+            newEntries,
+            expect.any(Object)
+        );
+        expect(tryAddCsvTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, expect.any(Object));
     });
     test('existing csv file - mem-fs-editor', async () => {
         // arrange
@@ -86,14 +99,15 @@ describe('createCapI18nEntries', () => {
         const tryAddPropertiesTextsSpy = jest.spyOn(properties, 'tryAddPropertiesTexts').mockResolvedValue(false);
         const tryAddCsvTextsSpy = jest.spyOn(csv, 'tryAddCsvTexts').mockResolvedValue(true);
         const memFs = create(createStorage());
+        const backend = memFsBackend(memFs);
         // act
-        const result = await createCapI18nEntries('root', 'path', newEntries, env, memFs);
+        const result = await createCapI18nEntries('root', 'path', newEntries, env, backend);
         // assert
         expect(result).toBeTruthy();
         expect(resolveCapI18nFolderSpy).toHaveBeenNthCalledWith(1, 'root', env, 'path');
-        expect(tryAddJsonTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, memFs);
-        expect(tryAddPropertiesTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, memFs);
-        expect(tryAddCsvTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, memFs);
+        expect(tryAddJsonTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, backend);
+        expect(tryAddPropertiesTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, backend);
+        expect(tryAddCsvTextsSpy).toHaveBeenNthCalledWith(1, env, pathToFolderI18n, newEntries, backend);
     });
     test('no existing i18n file — creates new .properties file', async () => {
         // arrange
@@ -109,21 +123,33 @@ describe('createCapI18nEntries', () => {
         const result = await createCapI18nEntries('root', 'path', newEntries, env);
         // assert
         expect(result).toBeTruthy();
-        expect(mkdirSpy).toHaveBeenNthCalledWith(1, defaultFolder);
-        expect(tryAddJsonTextsSpy).toHaveBeenNthCalledWith(1, env, join(defaultFolder, 'i18n'), newEntries, undefined);
+        expect(mkdirSpy).toHaveBeenNthCalledWith(1, defaultFolder, { recursive: true });
+        expect(tryAddJsonTextsSpy).toHaveBeenNthCalledWith(
+            1,
+            env,
+            join(defaultFolder, 'i18n'),
+            newEntries,
+            expect.any(Object)
+        );
         expect(tryAddPropertiesTextsSpy).toHaveBeenNthCalledWith(
             1,
             env,
             join(defaultFolder, 'i18n'),
             newEntries,
-            undefined
+            expect.any(Object)
         );
-        expect(tryAddCsvTextsSpy).toHaveBeenNthCalledWith(1, env, join(defaultFolder, 'i18n'), newEntries, undefined);
+        expect(tryAddCsvTextsSpy).toHaveBeenNthCalledWith(
+            1,
+            env,
+            join(defaultFolder, 'i18n'),
+            newEntries,
+            expect.any(Object)
+        );
         expect(writeFileSpy).toHaveBeenNthCalledWith(
             1,
             pathToNewPropertiesFile,
             '\n#XFLD,27\nNewKey=New Value\n',
-            undefined
+            expect.any(Object)
         );
     });
     test('no existing i18n file — creates new .properties file - mem-fs-editor', async () => {
@@ -137,25 +163,26 @@ describe('createCapI18nEntries', () => {
         const tryAddCsvTextsSpy = jest.spyOn(csv, 'tryAddCsvTexts').mockResolvedValue(false);
         const writeFileSpy = jest.spyOn(resolve, 'writeFile').mockResolvedValue();
         const memFs = create(createStorage());
+        const backend = memFsBackend(memFs);
         // act
-        const result = await createCapI18nEntries('root', 'path', newEntries, env, memFs);
+        const result = await createCapI18nEntries('root', 'path', newEntries, env, backend);
         // assert
         expect(result).toBeTruthy();
-        expect(mkdirSpy).toHaveBeenCalledTimes(0);
-        expect(tryAddJsonTextsSpy).toHaveBeenNthCalledWith(1, env, join(defaultFolder, 'i18n'), newEntries, memFs);
+        expect(mkdirSpy).toHaveBeenCalledTimes(0); // memFsBackend.mkdir is a no-op
+        expect(tryAddJsonTextsSpy).toHaveBeenNthCalledWith(1, env, join(defaultFolder, 'i18n'), newEntries, backend);
         expect(tryAddPropertiesTextsSpy).toHaveBeenNthCalledWith(
             1,
             env,
             join(defaultFolder, 'i18n'),
             newEntries,
-            memFs
+            backend
         );
-        expect(tryAddCsvTextsSpy).toHaveBeenNthCalledWith(1, env, join(defaultFolder, 'i18n'), newEntries, memFs);
+        expect(tryAddCsvTextsSpy).toHaveBeenNthCalledWith(1, env, join(defaultFolder, 'i18n'), newEntries, backend);
         expect(writeFileSpy).toHaveBeenNthCalledWith(
             1,
             pathToNewPropertiesFile,
             '\n#XFLD,27\nNewKey=New Value\n',
-            memFs
+            backend
         );
     });
     test('exception / error case', async () => {

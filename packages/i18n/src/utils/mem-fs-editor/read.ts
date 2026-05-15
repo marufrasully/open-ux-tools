@@ -1,16 +1,13 @@
-import { promises } from 'node:fs';
-import type { Editor } from 'mem-fs-editor';
+import { nodeFsBackend } from '../storage-backend';
+import type { StorageBackend } from '../storage-backend';
 
 /**
  * Read the entire contents of a file.
  *
  * @param filePath absolute path to a file.
- * @param fs optional `mem-fs-editor` instance. If provided, `read` api of `mem-fs-editor` is used.
+ * @param backend storage backend to use. Defaults to Node.js `fs/promises`.
  * @returns file content
  */
-export async function readFile(filePath: string, fs?: Editor): Promise<string> {
-    if (fs) {
-        return fs.read(filePath);
-    }
-    return promises.readFile(filePath, { encoding: 'utf8' });
+export async function readFile(filePath: string, backend: StorageBackend = nodeFsBackend): Promise<string> {
+    return backend.read(filePath);
 }

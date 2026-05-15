@@ -3,6 +3,7 @@ import * as utils from '../../../../src/utils';
 import { join } from 'node:path';
 import { create as createStorage } from 'mem-fs';
 import { create } from 'mem-fs-editor';
+import { memFsBackend } from '../../../../src/utils';
 
 describe('csv', () => {
     describe('add new i18n entries to csv file', () => {
@@ -117,9 +118,14 @@ describe('csv', () => {
             const result = await tryAddCsvTexts(env, path, entries);
             // assert
             expect(result).toEqual(true);
-            expect(doesExistSpy).toHaveBeenNthCalledWith(1, csvI18nFilePath);
-            expect(readFileSpy).toHaveBeenNthCalledWith(1, csvI18nFilePath, undefined);
-            expect(writeFileSpy).toHaveBeenNthCalledWith(1, csvI18nFilePath, 'key;en\nNewKey;New Value\n', undefined);
+            expect(doesExistSpy).toHaveBeenNthCalledWith(1, csvI18nFilePath, expect.any(Object));
+            expect(readFileSpy).toHaveBeenNthCalledWith(1, csvI18nFilePath, expect.any(Object));
+            expect(writeFileSpy).toHaveBeenNthCalledWith(
+                1,
+                csvI18nFilePath,
+                'key;en\nNewKey;New Value\n',
+                expect.any(Object)
+            );
         });
         test('add to existing .csv file - mem-fs-editor', async () => {
             // arrange
@@ -129,12 +135,17 @@ describe('csv', () => {
             const readFileSpy = jest.spyOn(utils, 'readFile').mockResolvedValue('');
             const writeFileSpy = jest.spyOn(utils, 'writeFile').mockResolvedValue();
             // act
-            const result = await tryAddCsvTexts(env, path, entries, memFs);
+            const result = await tryAddCsvTexts(env, path, entries, memFsBackend(memFs));
             // assert
             expect(result).toEqual(true);
-            expect(doesExistSpy).toHaveBeenNthCalledWith(1, csvI18nFilePath);
-            expect(readFileSpy).toHaveBeenNthCalledWith(1, csvI18nFilePath, memFs);
-            expect(writeFileSpy).toHaveBeenNthCalledWith(1, csvI18nFilePath, 'key;en\nNewKey;New Value\n', memFs);
+            expect(doesExistSpy).toHaveBeenNthCalledWith(1, csvI18nFilePath, expect.any(Object));
+            expect(readFileSpy).toHaveBeenNthCalledWith(1, csvI18nFilePath, expect.any(Object));
+            expect(writeFileSpy).toHaveBeenNthCalledWith(
+                1,
+                csvI18nFilePath,
+                'key;en\nNewKey;New Value\n',
+                expect.any(Object)
+            );
         });
     });
 });

@@ -1,4 +1,5 @@
-import { stat } from 'node:fs';
+import { nodeFsBackend } from './storage-backend';
+import type { StorageBackend } from './storage-backend';
 import type { CdsEnvironment } from '../types';
 import { getI18nConfiguration } from './config';
 
@@ -35,19 +36,12 @@ export function csvPath(path: string): string {
 }
 
 /**
- * Check if a folder of a file exists.
+ * Check if a folder or file exists.
  *
  * @param path an absolute path to a folder or a file
+ * @param backend storage backend to use. Defaults to Node.js `fs/promises`.
  * @returns boolean
  */
-export function doesExist(path: string): Promise<boolean> {
-    return new Promise((resolve) => {
-        stat(path, (err) => {
-            if (err) {
-                resolve(false);
-            } else {
-                resolve(true);
-            }
-        });
-    });
+export function doesExist(path: string, backend: StorageBackend = nodeFsBackend): Promise<boolean> {
+    return backend.exists(path);
 }

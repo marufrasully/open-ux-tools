@@ -1,5 +1,5 @@
 import type { CdsEnvironment, NewI18nEntry } from '../../types';
-import { csvPath, discoverLineEnding, getI18nConfiguration } from '../../utils';
+import { csvPath, discoverLineEnding, getI18nConfiguration, nodeFsBackend } from '../../utils';
 import { tryUpdateFile } from '../utils';
 
 import type { TextEdit } from 'vscode-languageserver-textdocument';
@@ -7,7 +7,7 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { Range, Position } from '@sap-ux/text-document-utils';
 import { parseCsv } from '../../parser/csv/parser';
 import type { CsvField } from '../../parser/csv/types';
-import type { Editor } from 'mem-fs-editor';
+import type { StorageBackend } from '../../utils';
 
 /**
  * Add CSV text for fallback.
@@ -109,15 +109,15 @@ export function addCsvTexts(text: string, fallbackLocale: string, newEntries: Ne
  * @param env cds environment
  * @param path file path
  * @param newI18nEntries new i18n entries that will be maintained
- * @param fs optional `mem-fs-editor` instance. If provided, `mem-fs-editor` api is used instead of `fs` of node
+ * @param backend storage backend to use. Defaults to Node.js `fs/promises`.
  * @returns boolean
  */
 export async function tryAddCsvTexts(
     env: CdsEnvironment,
     path: string,
     newI18nEntries: NewI18nEntry[],
-    fs?: Editor
+    backend: StorageBackend = nodeFsBackend
 ): Promise<boolean> {
     const { defaultLanguage } = getI18nConfiguration(env);
-    return tryUpdateFile(csvPath(path), (content) => addCsvTexts(content, defaultLanguage, newI18nEntries), fs);
+    return tryUpdateFile(csvPath(path), (content) => addCsvTexts(content, defaultLanguage, newI18nEntries), backend);
 }

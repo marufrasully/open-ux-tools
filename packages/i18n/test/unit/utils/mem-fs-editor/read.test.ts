@@ -1,6 +1,6 @@
 import { create as createStorage } from 'mem-fs';
 import { create } from 'mem-fs-editor';
-import { readFile } from '../../../../src/utils';
+import { readFile, memFsBackend } from '../../../../src/utils';
 import * as fs from 'node:fs';
 
 describe('read', () => {
@@ -11,7 +11,7 @@ describe('read', () => {
             const memFs = create(createStorage());
             const readSpy = jest.spyOn(memFs, 'read').mockReturnValue('mock-content' as any);
 
-            const result = await readFile(filePath, memFs);
+            const result = await readFile(filePath, memFsBackend(memFs));
             expect(result).toEqual('mock-content');
             expect(readSpy).toHaveBeenNthCalledWith(1, filePath);
             expect(promiseReadFileSpy).toHaveBeenCalledTimes(0);

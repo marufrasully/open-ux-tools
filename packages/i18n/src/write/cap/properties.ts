@@ -1,7 +1,7 @@
 import type { CdsEnvironment, NewI18nEntry } from '../../types';
-import { capPropertiesPath, doesExist } from '../../utils';
+import { capPropertiesPath, doesExist, nodeFsBackend } from '../../utils';
+import type { StorageBackend } from '../../utils';
 import { writeToExistingI18nPropertiesFile } from '../utils';
-import type { Editor } from 'mem-fs-editor';
 
 /**
  * Add i18n entries to respective i18n file.
@@ -11,18 +11,18 @@ import type { Editor } from 'mem-fs-editor';
  * @param env cds environment
  * @param path file path
  * @param newI18nEntries new i18n entries that will be maintained
- * @param fs optional `mem-fs-editor` instance. If provided, `mem-fs-editor` api is used instead of `fs` of node
+ * @param backend storage backend to use. Defaults to Node.js `fs/promises`.
  * @returns boolean
  */
 export async function tryAddPropertiesTexts(
     env: CdsEnvironment,
     path: string,
     newI18nEntries: NewI18nEntry[],
-    fs?: Editor
+    backend: StorageBackend = nodeFsBackend
 ): Promise<boolean> {
     const i18nFilePath = capPropertiesPath(path, env);
-    if (!(await doesExist(i18nFilePath))) {
+    if (!(await doesExist(i18nFilePath, backend))) {
         return false;
     }
-    return writeToExistingI18nPropertiesFile(i18nFilePath, newI18nEntries, [], fs);
+    return writeToExistingI18nPropertiesFile(i18nFilePath, newI18nEntries, [], backend);
 }

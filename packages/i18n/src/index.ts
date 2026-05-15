@@ -12,9 +12,11 @@ export {
     convertToCamelCase,
     convertToPascalCase,
     printPropertiesI18nEntry,
-    printPropertiesI18nAnnotation
+    printPropertiesI18nAnnotation,
+    nodeFsBackend,
+    memFsBackend
 } from './utils';
-export type { KeyedI18nLookup } from './utils';
+export type { KeyedI18nLookup, StorageBackend } from './utils';
 
 export {
     CdsEnvironment,
